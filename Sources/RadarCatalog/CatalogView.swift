@@ -1,3 +1,4 @@
+import Foundation
 import RadarStories
 import RadarUI
 import SwiftUI
@@ -16,8 +17,10 @@ enum PreviewAppearance: String, CaseIterable, Identifiable {
 struct CatalogView: View {
     @StateObject private var context = StoryContext()
     /// `make catalog COMPONENT=ClassicPopover` opens straight onto a component.
-    @State private var selection: String? = ProcessInfo.processInfo.environment["COMPONENT"].flatMap { $0.isEmpty ? nil : $0 }
-        ?? Stories.all.first?.component
+    @State private var selection: String? = initialComponent(
+        requested: ProcessInfo.processInfo.environment["COMPONENT"],
+        available: Stories.byComponent().map(\.component),
+    )
     @State private var search = ""
     @State private var appearance = PreviewAppearance.dark
     @State private var zoom = 1.0
@@ -92,4 +95,17 @@ struct CatalogSidebar: View {
         case .templates: "macwindow"
         }
     }
+}
+
+/// The component to open first: the requested one if it exists, otherwise the first.
+/// An unknown name is reported on stderr instead of opening a blank page.
+func initialComponent(requested: String?, available: [String]) -> String? {
+    guard let requested, !requested.isEmpty else {
+        return available.first
+    }
+    if available.contains(requested) {
+        return requested
+    }
+    FileHandle.standardError.write(Data("Unknown COMPONENT '\(requested)'. Opening \(available.first ?? "nothing").\n".utf8))
+    return available.first
 }
