@@ -118,6 +118,7 @@ Atoms → molecules → organisms → templates. **Story** = one catalog entry a
 | `CommandBlock` | text | short · long (wraps, max 3 lines) |
 | `ProgressBar` | fraction | 0 · 0.42 · 1 |
 | `SectionLabel` | title, count, status | needs you · working · idle |
+| `RadarBlip` *(Radar skin)* | session, tagLeads | question · permission · working · idle · tag leading · question (reduced motion) |
 
 ### Molecules
 
@@ -139,12 +140,15 @@ Atoms → molecules → organisms → templates. **Story** = one catalog entry a
 | `PopoverFooter` | KeyHints, "Open cmux" link | default |
 | `SessionList` | SessionCard × n, sorted: permission, waiting, working, idle | typical (6) · empty state · many (12+, scrolls) |
 | `MenuBarIcon` | StatusSummary | idle · working · needs you (count) · permission |
+| `RadarScope` *(Radar skin)* | RadarBlip × n, rings, crosshair, sweep | typical · twelve sessions · all quiet |
+| `RadarContact` *(Radar skin)* | header, log line, question or command, ReplyChips, ReplyField / PermissionBar | question · question, can't reply · permission · permission timed out · nobody calling |
 
 ### Templates
 
 | Template | Stories |
 |---|---|
 | `ClassicPopover` | typical · empty ("All quiet") · everything waiting · light mode |
+| `RadarPopover` | typical · everything waiting · all quiet |
 | `InboxPanel` *(later PR)* | session selected · nothing selected |
 | `SidebarPanel` *(later PR)* | typical |
 
@@ -156,6 +160,15 @@ Atoms → molecules → organisms → templates. **Story** = one catalog entry a
 - A card with `canReply == false` swaps the reply field for a "Jump to tab" button and hides its quick replies: you can always act, but never send to a session that can't take input.
 - A permission card without request details still offers "Jump to tab".
 - Long names and summaries truncate with an ellipsis; questions never truncate (they're the point).
+
+### Radar skin
+
+The Radar skin is a `Theme` (`Theme.radar`): a phosphor palette that is identical in dark and light, monospaced type, and square corners. The shared components (`ReplyChips`, `ReplyField`, `PermissionBar`) restyle through it rather than being rebuilt, and the palette passes the same contrast tests as Classic. `RadarPopover` applies the theme itself.
+
+- **Blips.** A blip's bearing comes from a stable hash of the session id (FNV-1a, not Swift's per-process `hashValue`), so it doesn't move between launches. Its distance from the centre shows urgency: permission is innermost, then waiting, working and idle. Each status has its own glyph shape (square, large disc, medium disc, small dot), not just its own colour.
+- **Tags.** On the scope's right half a tag sits before its glyph, pointing inwards. Names in tags are cut to 12 characters; the contact panel and the accessibility label carry the full name.
+- **Contact panel.** It shows the selected caller while that session still needs you, otherwise the most urgent one. ⇥ moves to the next caller, wrapping round; ⌘1–9 and ⌥⏎ act on the caller shown.
+- **Motion.** The sweep and the blinking stop when motion is reduced.
 
 ## 6. Accessibility
 
