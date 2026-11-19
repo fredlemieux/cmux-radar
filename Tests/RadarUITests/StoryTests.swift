@@ -10,7 +10,13 @@ import Testing
 struct StorySnapshotTests {
     @Test(arguments: Stories.all, [ColorScheme.dark, .light])
     func `matches its reference image`(story: Story, scheme: ColorScheme) {
-        assertSnapshot(of: StoryCanvas(story), size: story.size, named: story.snapshotName, colorScheme: scheme)
+        assertSnapshot(
+            of: StoryCanvas(story),
+            size: story.size,
+            named: story.snapshotName,
+            colorScheme: scheme,
+            renderer: story.usesAppKitControls ? .hosted : .image,
+        )
     }
 }
 
