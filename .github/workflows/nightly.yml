@@ -1,0 +1,36 @@
+name: nightly
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visibility:
+    name: check repo is public
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      public: ${{ steps.check.outputs.public }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "public=$(gh api "repos/${{ github.repository }}" --jq '.private | not')" >> "$GITHUB_OUTPUT"
+
+  mutation:
+    name: mutation (full)
+    # macOS minutes are only free on public repos (docs/architecture-and-costs.md).
+    needs: visibility
+    if: needs.visibility.outputs.public == 'true'
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Muter
+        run: brew install muter-mutation-testing/formulae/muter
+      - name: Mutate everything
+        run: scripts/mutate.sh
