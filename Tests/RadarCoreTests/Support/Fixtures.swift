@@ -9,6 +9,12 @@ func at(_ seconds: TimeInterval) -> Date {
     epoch.addingTimeInterval(seconds)
 }
 
+/// An event `seconds` after the epoch, at stream position `seconds` (order follows time unless a
+/// test says otherwise).
+func stamp(_ seconds: TimeInterval, seq: UInt64? = nil) -> Stamp {
+    Stamp(seq: seq ?? UInt64(seconds), time: at(seconds))
+}
+
 func context(_ id: String, cwd: String = "/Users/dev/code/api", surface: String? = "surface-1") -> SessionContext {
     SessionContext(id: SessionID(id), cwd: cwd, workspaceID: "workspace-1", surfaceID: surface)
 }
@@ -21,7 +27,8 @@ func session(
     pendingSince: Date? = nil,
     updatedAt: Date = epoch,
 ) -> Session {
-    var session = Session(context: context(id, surface: surface), state: state, at: updatedAt)
+    let seconds = updatedAt.timeIntervalSince(epoch)
+    var session = Session(context: context(id, surface: surface), state: state, at: Stamp(seq: UInt64(seconds), time: updatedAt))
     session.pending = pending
     session.pendingSince = pendingSince
     return session

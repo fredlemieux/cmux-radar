@@ -90,6 +90,21 @@ public enum PendingDecision: Equatable, Sendable {
     }
 }
 
+/// Where an event sits in cmux's event stream, and when it happened.
+///
+/// Order comes from `seq`, never the clock: hooks, Feed and notifications stamp times from
+/// different moments, so wall-clock order can disagree with the stream's. Bootstrap snapshots use
+/// the stream position they were read at.
+public struct Stamp: Equatable, Sendable {
+    public let seq: UInt64
+    public let time: Date
+
+    public init(seq: UInt64, time: Date) {
+        self.seq = seq
+        self.time = time
+    }
+}
+
 /// Identity details carried by every agent event; used to create a session on first sight.
 public struct SessionContext: Equatable, Sendable {
     public let id: SessionID
@@ -123,9 +138,11 @@ public struct Session: Identifiable, Equatable, Sendable {
     /// When the open decision arrived; Feed stops holding it after `Policy.pendingTimeout`.
     public var pendingSince: Date?
     public var updatedAt: Date
+    /// The stream position of the last event applied: an event from earlier in the stream is stale.
+    public var lastSeq: UInt64
 
     /// A new session seen for the first time, titled after its working directory.
-    public init(context: SessionContext, state: SessionState, at time: Date) {
+    public init(context: SessionContext, state: SessionState, at stamp: Stamp) {
         id = context.id
         agent = AgentKind(sessionID: context.id)
         title = defaultTitle(cwd: context.cwd, id: context.id)
@@ -133,7 +150,8 @@ public struct Session: Identifiable, Equatable, Sendable {
         workspaceID = context.workspaceID
         surfaceID = context.surfaceID
         self.state = state
-        updatedAt = time
+        updatedAt = stamp.time
+        lastSeq = stamp.seq
     }
 }
 
