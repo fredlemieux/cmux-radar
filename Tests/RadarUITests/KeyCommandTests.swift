@@ -1,4 +1,6 @@
-// MUTATION-VERIFIED: killed 3/3 mutants on 2026-11-19 (Logic/KeyCommands.swift)
+import RadarStories
+
+// MUTATION-VERIFIED: killed 4/4 mutants on 2026-11-19 (Logic/KeyCommands.swift)
 @testable import RadarUI
 import Testing
 
@@ -55,5 +57,47 @@ struct QuickReplyTests {
     func `returns nothing unless the session is waiting`(status: SessionStatus) {
         let other = SessionCardModel(id: "s", name: "s", age: "1m", status: status, replies: session.replies)
         #expect(quickReply(1, in: other) == nil)
+    }
+}
+
+struct RouteTests {
+    let first = SampleSessions.waiting
+    let second = SampleSessions.waitingNoReplies
+
+    @Test func `picks on the focused session, not the first one`() {
+        let other = SessionCardModel(
+            id: "other",
+            name: "other",
+            age: "1m",
+            status: .waiting,
+            replies: [ReplyOption(index: 1, label: "Yes")],
+        )
+        #expect(route(.pick(1), focused: "other", in: [first, other]) == .pick(sessionID: "other", ReplyOption(index: 1, label: "Yes")))
+    }
+
+    @Test func `jumps to the focused session`() {
+        #expect(route(.jump, focused: second.id, in: [first, second]) == .jump(sessionID: second.id))
+    }
+
+    @Test func `does nothing when no card is focused`() {
+        #expect(route(.jump, focused: nil, in: [first, second]) == nil)
+    }
+
+    @Test func `does nothing when the focused session is gone`() {
+        #expect(route(.jump, focused: "gone", in: [first, second]) == nil)
+    }
+
+    @Test func `does nothing when the focused session has no such reply`() {
+        #expect(route(.pick(1), focused: second.id, in: [first, second]) == nil)
+    }
+}
+
+struct SessionLookupTests {
+    @Test func `finds the session with that id`() {
+        #expect(session(SampleSessions.idle.id, in: SampleSessions.typical)?.id == SampleSessions.idle.id)
+    }
+
+    @Test func `is nil for an unknown id`() {
+        #expect(session("gone", in: SampleSessions.typical) == nil)
     }
 }

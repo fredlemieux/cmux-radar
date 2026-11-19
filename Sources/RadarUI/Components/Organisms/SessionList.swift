@@ -4,7 +4,7 @@ public import SwiftUI
 ///
 /// Keyboard (docs/design/components.md §6): ⇥ moves between cards, ⌘1–9 sends that quick reply on
 /// the focused card, ⌥⏎ jumps to the focused card's tab. Reply drafts are held by the caller,
-/// keyed by session id.
+/// keyed by `draftKey(for:)`.
 public struct SessionList: View {
     let sessions: [SessionCardModel]
     let actions: SessionActions
@@ -26,7 +26,7 @@ public struct SessionList: View {
             ScrollView {
                 VStack(spacing: theme.metrics.space8) {
                     ForEach(sortedByUrgency(sessions)) { session in
-                        SessionCard(session, draft: draft(for: session.id), actions: actions)
+                        SessionCard(session, draft: draft(for: draftKey(for: session)), actions: actions)
                             .focusable()
                             .focused($focused, equals: session.id)
                             .overlay {
@@ -61,31 +61,23 @@ public struct SessionList: View {
         .frame(maxWidth: .infinity, minHeight: theme.metrics.emptyStateHeight)
     }
 
-    private func draft(for id: String) -> Binding<String> {
-        Binding(get: { drafts[id] ?? "" }, set: { drafts[id] = $0 })
+    private func draft(for key: String) -> Binding<String> {
+        Binding(get: { drafts[key] ?? "" }, set: { drafts[key] = $0 })
     }
 
     private func handle(_ press: KeyPress) -> KeyPress.Result {
-        guard
-            let id = focused,
-            let session = sessions.first(where: { $0.id == id }),
-            let command = keyCommand(
-                characters: press.characters,
-                isReturn: press.key == .return,
-                command: press.modifiers.contains(.command),
-                option: press.modifiers.contains(.option),
-            )
-        else {
+        let command = keyCommand(
+            characters: press.characters,
+            isReturn: press.key == .return,
+            command: press.modifiers.contains(.command),
+            option: press.modifiers.contains(.option),
+        )
+        guard let command, let routed = route(command, focused: focused, in: sessions) else {
             return .ignored
         }
-        switch command {
-        case let .pick(index):
-            guard let option = quickReply(index, in: session) else {
-                return .ignored
-            }
-            actions.pick(id, option)
-        case .jump:
-            actions.jump(id)
+        switch routed {
+        case let .pick(id, option): actions.pick(id, option)
+        case let .jump(id): actions.jump(id)
         }
         return .handled
     }
