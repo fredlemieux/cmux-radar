@@ -37,8 +37,9 @@ public func assertSnapshot(
     let reference = referenceData.flatMap(PNGCodec.decode)
     if referenceData != nil, reference == nil, !record {
         // Never overwrite a reference we can't read (corrupt file, LFS pointer, conflict markers).
-        _ = write(actual, to: paths.failure, creating: paths.directory)
-        Issue.record("Reference at \(paths.reference) is not a readable PNG. Actual: \(paths.failure)", sourceLocation: sourceLocation)
+        let wrote = write(actual, to: paths.failure, creating: paths.directory)
+        let actualNote = wrote ? "Actual: \(paths.failure)" : "Could not write the actual image."
+        Issue.record("Reference at \(paths.reference) is not a readable PNG. \(actualNote)", sourceLocation: sourceLocation)
         return
     }
     let verdict = judgeSnapshot(
