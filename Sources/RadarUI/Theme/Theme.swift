@@ -7,6 +7,7 @@ public nonisolated struct Typography: Sendable {
     public var body = Font.system(size: 12.5)
     /// Extra space between body lines (≈ 1.5 line height at 12.5 pt).
     public var bodyLineSpacing: CGFloat = 3
+    public var questionLineSpacing: CGFloat = 2
     public var question = Font.system(size: 13)
     public var caption = Font.system(size: 11)
     public var chip = Font.system(size: 12, weight: .medium)
@@ -18,6 +19,13 @@ public nonisolated struct Typography: Sendable {
     /// Section label tracking: +0.06 em at 11 pt.
     public var sectionLabelTracking: CGFloat = 0.66
     public var badge = Font.system(size: 11, weight: .bold)
+    public var input = Font.system(size: 13)
+    public var rowName = Font.system(size: 13)
+    public var rowSummary = Font.system(size: 12)
+    public var subtitle = Font.system(size: 12)
+    public var link = Font.system(size: 12, weight: .medium)
+    public var emptyIcon = Font.system(size: 22)
+    public var menuBarGlyph = Font.system(size: 13, weight: .semibold)
 
     public init() {}
 }
@@ -48,6 +56,12 @@ public nonisolated struct Metrics: Sendable {
     public var progressHeight: CGFloat = 3
     public var chipMaxWidth: CGFloat = 200
     public var popoverWidth: CGFloat = 436
+    public var popoverHeaderTop: CGFloat = 14
+    public var hairline: CGFloat = 1
+    public var emptyStateHeight: CGFloat = 160
+    public var menuBarHeight: CGFloat = 22
+    public var menuBarPadding: CGFloat = 6
+    public var menuBarSpacing: CGFloat = 5
 
     public init() {}
 }
