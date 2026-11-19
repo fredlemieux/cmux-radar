@@ -15,7 +15,13 @@ struct ComponentPage: View {
                 VStack(alignment: .leading, spacing: 28) {
                     header(component, stories: stories)
                     if let playground = Playgrounds.named(component) {
-                        PlaygroundSection(playground: playground, appearance: appearance, zoom: zoom, context: context)
+                        PlaygroundSection(
+                            playground: playground,
+                            level: stories.first?.level ?? .atoms,
+                            appearance: appearance,
+                            zoom: zoom,
+                            context: context,
+                        )
                     }
                     StoriesSection(stories: stories, appearance: appearance, zoom: zoom, context: context)
                 }
@@ -46,11 +52,16 @@ private struct StoriesSection: View {
     let zoom: Double
     let context: StoryContext
 
+    /// The widest card in the group, so no fixed-size card spills into the next grid column.
+    private var cardWidth: CGFloat {
+        storyCardWidth(widest: stories.map(\.size.width).max() ?? 0, appearance: appearance, zoom: zoom)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Stories").font(.title3.weight(.semibold))
             LazyVGrid(
-                columns: [GridItem(.adaptive(minimum: 260 * zoom), spacing: 20, alignment: .topLeading)],
+                columns: [GridItem(.adaptive(minimum: cardWidth), spacing: 20, alignment: .topLeading)],
                 alignment: .leading,
                 spacing: 20,
             ) {
@@ -66,6 +77,7 @@ private struct StoriesSection: View {
 
 private struct PlaygroundSection: View {
     let playground: Playground
+    let level: StoryLevel
     let appearance: PreviewAppearance
     let zoom: Double
     let context: StoryContext
@@ -73,9 +85,15 @@ private struct PlaygroundSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Playground").font(.title3.weight(.semibold))
-            Text("Change the inputs on the right; the component updates live.")
+            Text(appearance == .both
+                ? "Change the inputs on the right; the component updates live. Shown in dark; switch to Light to see it light."
+                : "Change the inputs on the right; the component updates live.")
                 .foregroundStyle(.secondary)
-            playground.render(context.scoped(to: "\(playground.component)/Playground"), appearance == .light ? .light : .dark, zoom)
+            playground.render(
+                context.scoped(to: "\(level.rawValue)/\(playground.component)/Playground"),
+                appearance == .light ? .light : .dark,
+                zoom,
+            )
         }
     }
 }
@@ -110,4 +128,10 @@ struct StoryCard<Content: View>: View {
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.separator))
     }
+}
+
+/// Width of one story card: the story at `zoom`, twice plus the gap when shown side by side.
+func storyCardWidth(widest: CGFloat, appearance: PreviewAppearance, zoom: Double) -> CGFloat {
+    let single = widest * zoom
+    return appearance == .both ? single * 2 + 12 : single
 }
