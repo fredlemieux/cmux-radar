@@ -45,5 +45,14 @@ let package = Package(
             ],
             swiftSettings: strict,
         ),
+
+        .testTarget(
+            name: "RadarUITests",
+            dependencies: [
+                "RadarUI",
+                .product(name: "PropertyBased", package: "swift-property-based"),
+            ],
+            swiftSettings: strict,
+        ),
     ],
 )
