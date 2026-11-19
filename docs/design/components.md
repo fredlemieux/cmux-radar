@@ -7,7 +7,7 @@ Source: the v1 design canvas (Classic popover, Inbox panel, cmux sidebar, menu b
 ## 1. Principles
 
 1. **One glance, one action.** A waiting session shows the question and the answer controls without a click.
-2. **Status by colour and shape.** Each status has a colour *and* its own dot shape: waiting = halo, permission = ring, working = solid, idle = hollow. It reads without colour vision (tested: `DotTreatmentTests`).
+2. **Status by colour, shape and place.** Each status has a colour *and* its own dot shape: waiting = halo, permission = ring, working = solid, idle = hollow (`DotTreatmentTests`). Permission's ring and idle's outline stand out without colour. Waiting and working differ only by a soft halo, so they are also separated by **position and grouping**: urgent sessions always sort first and render as cards with the question visible.
 3. **Native first.** System font (SF Pro / SF Mono), system materials where they help, standard keyboard behaviour. The mockups used Inter; the native build uses the system font.
 4. **Display-ready inputs.** Components never format dates or compute status; they get strings and enums.
 
