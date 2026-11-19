@@ -84,14 +84,26 @@ enum PendingDecision {
 
 `reduce(state, event) -> state` is a pure function. Everything else is side effects around it.
 
-In code (`Sources/RadarCore`): adapters decode cmux frames into `RadarEvent`s, and `reduce` applies them. Edge rules the table leaves open:
+In code (`Sources/RadarCore`): adapters decode cmux frames into `RadarEvent`s, and `reduce` applies them. Edge rules the table leaves open, because events can be late, replayed (bootstrap, resume gaps) or interleaved by parallel tools:
 
-- A resolution only closes the decision with the same `request_id`; a stale or foreign id is ignored.
-- `Stop` and `SessionEnd` drop any open decision, because the turn it belonged to is over.
-- The "Waiting" notification only moves a `working` session; it never overrides an open decision.
-- An event for an unseen session creates it (prompt, tool, decision, stop); a resolution, end, title or text event for an unseen session is ignored.
-- `Session.pendingSince` records when the open decision arrived, so actions can tell when Feed has let go of it (`isPendingExpired`).
-- Ageing (`.tick`) keeps `updatedAt`: it is the last activity, not the last state change.
+- **Stale events.** An event older than a session's last activity never changes it. A replayed "Waiting" notification or a late Stop can't flip a newer turn to `waiting`, which would let Radar type mid-turn.
+- **Context.** Later events fill in context the session lacked, such as a surface that was `null`. They never blank out known context.
+- **Decisions.**
+  - Resolution is keyed by `request_id` alone and closes only the decision holding that id.
+  - A parallel tool call (`PreToolUse`, Feed `toolUse`) keeps an open decision open, because the agent is still blocked on it.
+  - A re-sent copy of the open decision keeps its arrival time, so the Feed timeout isn't restarted.
+  - `UserPromptSubmit`, `Stop` and `SessionEnd` drop any open decision, because its turn is over.
+- **Unseen and ended sessions.**
+  - A prompt, tool or decision event creates an unseen session.
+  - A Stop for an unseen session is ignored (bootstrap discovers existing ones), so a late Stop never makes a ghost card.
+  - Only a new prompt revives an ended session.
+- **Feed replies** name the `request_id` shown on the card and are refused unless that decision is still the open one. They stop `replyMargin` (5 s) before the 120 s timeout, so a reply in flight still lands.
+- `Session.pendingSince` records when the open decision arrived. Ageing (`.tick`) keeps `updatedAt`, because it is the last activity, not the last state change.
+
+Known v1 limits:
+
+- **One open decision per session.** If two subagents ask at once, the newer request replaces the older on the card, and the older can still be answered in the terminal via Jump.
+- **A `working` session never ages.** If both Stop and the Waiting notification are missed, it stays working until the next event.
 
 ### Bootstrap and resume
 
@@ -197,7 +209,7 @@ Rules: skins receive view models and an `actions` handle only. They can't touch 
 
 Swift Testing, one behaviour per test, nested `@Suite`s per feature and scenario.
 
-- **Reducer:** a test per transition row in §3, driven by recorded and scrubbed event fixtures.
+- **Reducer:** a test per transition row and edge rule in §3, with property tests over every state. Recorded, scrubbed event fixtures arrive with the cmux adapters that decode them.
 - **Bootstrap:** gap handling, persisted `seq`, a missing `claude-hook-sessions.json`.
 - **Actions:** reply refused while `working`; reply refused with `surfaceID == nil`; expired pending → jump only.
 - **CmuxStateReader:** tail-reading from an offset; malformed lines skipped.
