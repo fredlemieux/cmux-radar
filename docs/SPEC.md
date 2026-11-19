@@ -84,6 +84,15 @@ enum PendingDecision {
 
 `reduce(state, event) -> state` is a pure function. Everything else is side effects around it.
 
+In code (`Sources/RadarCore`): adapters decode cmux frames into `RadarEvent`s, and `reduce` applies them. Edge rules the table leaves open:
+
+- A resolution only closes the decision with the same `request_id`; a stale or foreign id is ignored.
+- `Stop` and `SessionEnd` drop any open decision, because the turn it belonged to is over.
+- The "Waiting" notification only moves a `working` session; it never overrides an open decision.
+- An event for an unseen session creates it (prompt, tool, decision, stop); a resolution, end, title or text event for an unseen session is ignored.
+- `Session.pendingSince` records when the open decision arrived, so actions can tell when Feed has let go of it (`isPendingExpired`).
+- Ageing (`.tick`) keeps `updatedAt`: it is the last activity, not the last state change.
+
 ### Bootstrap and resume
 
 1. Read `claude-hook-sessions.json` → initial sessions (title, cwd, surface, last message).

@@ -144,7 +144,8 @@ No servers; the app is fully local. Ongoing costs are the Apple Developer Progra
 
 ## Roadmap
 
-- [ ] `RadarCore`: cmux client, session store, actions
+- [x] `RadarCore`: session model, reducer, action rules, suggested replies
+- [ ] `RadarCore`: cmux client, state-file reader, session store
 - [ ] Classic skin + menu bar app
 - [ ] Inbox panel (`⌥Space`)
 - [ ] Radar skin
