@@ -14,12 +14,15 @@ public final class StoryContext: ObservableObject {
     @Published public private(set) var log: [StoryAction] = []
     private let recording: Bool
     private let story: String
-    private weak var root: StoryContext?
+    /// Strong: the root holds no children, so there is no cycle, and a root kept only by its
+    /// children must still receive their actions.
+    private let root: StoryContext?
     private var nextID = 1
 
     public init(recording: Bool = true) {
         self.recording = recording
         story = ""
+        root = nil
     }
 
     private init(root: StoryContext, story: String) {
