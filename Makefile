@@ -12,7 +12,8 @@ help: ## List tasks
 bootstrap: ## Install tools (Homebrew) and git hooks
 	brew bundle --file=Brewfile
 	scripts/check-tool-versions.sh
-	git config --local core.hooksPath .git/hooks
+	# Absolute path: a relative one doesn't resolve inside linked worktrees, which then run no hooks.
+	git config --local core.hooksPath "$$(git rev-parse --path-format=absolute --git-common-dir)/hooks"
 	lefthook install --force
 
 .PHONY: format
