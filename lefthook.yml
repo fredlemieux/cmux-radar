@@ -1,0 +1,23 @@
+# Git hooks — installed by `make bootstrap`.
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      glob: "*.swift"
+      run: swiftformat --lint {staged_files}
+    lint:
+      glob: "*.swift"
+      run: scripts/swiftlint.sh lint --strict --quiet {staged_files}
+
+commit-msg:
+  piped: true # run in order: the user's global hook first, then ours
+  commands:
+    1_global-hook:
+      run: scripts/run-global-hook.sh commit-msg {1}
+    2_conventional:
+      run: scripts/check-commit-msg.sh {1}
+
+pre-push:
+  commands:
+    check:
+      run: make build test
