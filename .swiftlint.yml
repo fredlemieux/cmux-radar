@@ -75,7 +75,7 @@ custom_rules:
     severity: error
   no_disabled_tests:
     name: "No disabled tests"
-    regex: '\.disabled\('
+    regex: '\.disabled\(|\.enabled\(\s*if:\s*false'
     message: "No skipped tests (docs/standards.md §3). Delete or fix it."
     severity: error
   no_print_in_sources:
