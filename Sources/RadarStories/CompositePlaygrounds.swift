@@ -21,10 +21,11 @@ private struct SessionCardPlayground: View {
     @State private var canReply = true
     @State private var expired = false
     @State private var progress = 0.42
+    @State private var draft = ""
 
     var body: some View {
         PlaygroundLayout(scheme: scheme, zoom: zoom, previewSize: CGSize(width: 468, height: 320)) {
-            SessionCard(model, actions: .logging(to: context))
+            SessionCard(model, draft: $draft, actions: .logging(to: context))
         } controls: {
             StatusPicker(title: "Status", status: $status)
             TextField("Name", text: $name)
@@ -89,11 +90,13 @@ private struct PopoverPlayground: View {
     let zoom: Double
     @State private var scenario = Scenario.typical
     @State private var sessions = SampleSessions.typical
+    @State private var drafts: [String: String] = [:]
 
     var body: some View {
         PlaygroundLayout(scheme: scheme, zoom: zoom, previewSize: CGSize(width: 468, height: 780)) {
             ClassicPopover(
                 sessions: sessions,
+                drafts: $drafts,
                 actions: liveActions,
                 onSearch: context.action("search"),
                 onSettings: context.action("settings"),
@@ -103,8 +106,8 @@ private struct PopoverPlayground: View {
             Picker("Scenario", selection: $scenario) {
                 ForEach(Scenario.allCases) { Text($0.rawValue).tag($0) }
             }
-            .onChange(of: scenario) { _, new in sessions = new.sessions }
-            Button("Reset") { sessions = scenario.sessions }
+            .onChange(of: scenario) { _, new in reset(to: new) }
+            Button("Reset") { reset(to: scenario) }
             Text("Reply, pick a quick reply or allow: the card starts working. Deny: it goes idle.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -124,7 +127,13 @@ private struct PopoverPlayground: View {
         )
     }
 
+    private func reset(to scenario: Scenario) {
+        sessions = scenario.sessions
+        drafts = [:]
+    }
+
     private func startWorking(_ id: String, on summary: String) {
+        drafts[id] = nil // The container owns drafts: an answered question's draft is gone.
         replace(id) { SessionCardModel(
             id: $0.id,
             name: $0.name,

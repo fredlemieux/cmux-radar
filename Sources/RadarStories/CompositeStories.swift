@@ -43,6 +43,9 @@ nonisolated extension Stories {
         Story(.molecules, "ReplyChips", "Three options", size: CGSize(width: cardWidth, height: 72)) { context in
             ReplyChips(SampleSessions.waiting.replies) { context.action("pick")("\($0.index) \($0.label)") }
         },
+        Story(.molecules, "ReplyChips", "One option", size: CGSize(width: cardWidth, height: 72)) { context in
+            ReplyChips([ReplyOption(index: 1, label: "Restart now")]) { context.action("pick")("\($0.index) \($0.label)") }
+        },
         Story(.molecules, "ReplyChips", "Wraps", size: CGSize(width: 300, height: 104)) { context in
             ReplyChips(SampleSessions.waiting.replies + [ReplyOption(index: 4, label: "Ask the team")]) {
                 context.action("pick")("\($0.index) \($0.label)")
@@ -52,18 +55,33 @@ nonisolated extension Stories {
 
     private static let replyField: [Story] = [
         Story(.molecules, "ReplyField", "Empty", size: CGSize(width: cardWidth, height: 72), usesAppKitControls: true) { context in
-            ReplyField(placeholder: "Reply to api-gateway…", onReply: context.action("reply"), onJump: context.action("jump"))
+            StateHost("") { text in
+                ReplyField(
+                    placeholder: "Reply to api-gateway…",
+                    text: text,
+                    onReply: context.action("reply"),
+                    onJump: context.action("jump"),
+                )
+            }
         },
         Story(.molecules, "ReplyField", "Typed", size: CGSize(width: cardWidth, height: 72), usesAppKitControls: true) { context in
+            StateHost("Go with the feature flag") { text in
+                ReplyField(
+                    placeholder: "Reply to api-gateway…",
+                    text: text,
+                    onReply: context.action("reply"),
+                    onJump: context.action("jump"),
+                )
+            }
+        },
+        Story(.molecules, "ReplyField", "Can't reply", size: CGSize(width: cardWidth, height: 72)) { context in
             ReplyField(
-                placeholder: "Reply to api-gateway…",
-                initialText: "Go with the feature flag",
+                placeholder: "Reply…",
+                canReply: false,
+                text: .constant(""),
                 onReply: context.action("reply"),
                 onJump: context.action("jump"),
             )
-        },
-        Story(.molecules, "ReplyField", "Can't reply", size: CGSize(width: cardWidth, height: 72)) { context in
-            ReplyField(placeholder: "Reply…", canReply: false, onReply: context.action("reply"), onJump: context.action("jump"))
         },
     ]
 
@@ -127,7 +145,7 @@ nonisolated extension Stories {
             size: CGSize(width: cardWidth + 32, height: height),
             usesAppKitControls: hasField,
         ) { context in
-            SessionCard(session, actions: .logging(to: context))
+            StateHost("") { draft in SessionCard(session, draft: draft, actions: .logging(to: context)) }
         }
     }
 
@@ -142,16 +160,29 @@ nonisolated extension Stories {
         Story(.organisms, "PopoverHeader", "All quiet", size: CGSize(width: cardWidth + 32, height: 90)) { context in
             PopoverHeader(summary: StatusSummary(), onSearch: context.action("search"), onSettings: context.action("settings"))
         },
+        Story(.organisms, "PopoverHeader", "All idle", size: CGSize(width: cardWidth + 32, height: 90)) { context in
+            PopoverHeader(summary: StatusSummary(idle: 4), onSearch: context.action("search"), onSettings: context.action("settings"))
+        },
         Story(.organisms, "PopoverFooter", "Default", size: CGSize(width: cardWidth + 32, height: 72)) { context in
             PopoverFooter(onOpenCmux: context.action("open cmux"))
         },
     ]
 
     private static let sessionList: [Story] = [
+        list("Typical", SampleSessions.typical, height: 700),
+        list("Many, scrolls", SampleSessions.many, height: 520),
         Story(.organisms, "SessionList", "Empty", size: CGSize(width: cardWidth + 32, height: 200)) { context in
-            SessionList([], actions: .logging(to: context))
+            SessionList([], drafts: .constant([:]), actions: .logging(to: context))
         },
     ]
+
+    private static func list(_ name: String, _ sessions: [SessionCardModel], height: CGFloat) -> Story {
+        Story(.organisms, "SessionList", name, size: CGSize(width: cardWidth + 32, height: height), usesAppKitControls: true) { context in
+            StateHost([String: String]()) { drafts in
+                SessionList(sessions, drafts: drafts, actions: .logging(to: context))
+            }
+        }
+    }
 
     private static let menuBarIcon: [Story] = [
         Story(.organisms, "MenuBarIcon", "Idle", size: CGSize(width: 120, height: 56)) { _ in MenuBarIcon(StatusSummary(idle: 3)) },
@@ -179,13 +210,16 @@ nonisolated extension Stories {
             size: CGSize(width: cardWidth + 32, height: height),
             usesAppKitControls: hasField,
         ) { context in
-            ClassicPopover(
-                sessions: sessions,
-                actions: .logging(to: context),
-                onSearch: context.action("search"),
-                onSettings: context.action("settings"),
-                onOpenCmux: context.action("open cmux"),
-            )
+            StateHost([String: String]()) { drafts in
+                ClassicPopover(
+                    sessions: sessions,
+                    drafts: drafts,
+                    actions: .logging(to: context),
+                    onSearch: context.action("search"),
+                    onSettings: context.action("settings"),
+                    onOpenCmux: context.action("open cmux"),
+                )
+            }
         }
     }
 }

@@ -36,7 +36,7 @@ public struct IdleRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(session.name), idle, \(session.age). \(session.summary ?? "")")
+        .accessibilityLabel([session.name, "idle", session.age, session.summary].compactMap(\.self).joined(separator: ", "))
         .accessibilityHint("Jumps to the session's tab")
     }
 }

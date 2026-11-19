@@ -1,21 +1,22 @@
 public import SwiftUI
 
-/// Free-text reply. ⏎ sends (trimmed, never empty) and clears. When the session can't take
-/// typed input, it becomes a "Jump to tab" button so there's always an action.
+/// Free-text reply. ⏎ sends (trimmed, never empty) and clears. The draft is owned by the
+/// container (per session), so it survives redraws and can be cleared when the question changes.
+/// When the session can't take typed input, it becomes a "Jump to tab" button.
 public struct ReplyField: View {
     let placeholder: String
     let canReply: Bool
     let onReply: (String) -> Void
     let onJump: () -> Void
 
-    @State private var text: String
+    @Binding private var text: String
     @Environment(\.radarTheme) private var theme
     @FocusState private var focused: Bool
 
     public init(
         placeholder: String,
         canReply: Bool = true,
-        initialText: String = "",
+        text: Binding<String>,
         onReply: @escaping (String) -> Void,
         onJump: @escaping () -> Void,
     ) {
@@ -23,7 +24,7 @@ public struct ReplyField: View {
         self.canReply = canReply
         self.onReply = onReply
         self.onJump = onJump
-        _text = State(initialValue: initialText)
+        _text = text
     }
 
     public var body: some View {
@@ -31,7 +32,8 @@ public struct ReplyField: View {
             field
         } else {
             ActionButton("Jump to tab ⌥⏎", action: onJump)
-                .accessibilityHint("This session can't take a typed reply here")
+                .accessibilityLabel("Jump to tab")
+                .accessibilityHint("This session can't take a typed reply here. Shortcut: option return.")
         }
     }
 
@@ -46,6 +48,7 @@ public struct ReplyField: View {
             .focused($focused)
             .onSubmit(submit)
             KeyHint("⌥⏎ jump")
+                .accessibilityHidden(true)
             IconButton("arrow.right", label: "Send reply", style: .filled, action: submit)
                 .disabled(normalisedReply(text) == nil)
         }

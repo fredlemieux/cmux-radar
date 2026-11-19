@@ -46,10 +46,14 @@ public struct PopoverFooter: View {
 
     public var body: some View {
         HStack(spacing: theme.metrics.space6) {
-            KeyHint("⌘1–9")
-            Text("answer ·").font(theme.type.caption).foregroundStyle(theme.color(\.textTertiary))
-            KeyHint("⇥")
-            Text("next").font(theme.type.caption).foregroundStyle(theme.color(\.textTertiary))
+            HStack(spacing: theme.metrics.space6) {
+                KeyHint("⌘1–9")
+                Text("answer ·").font(theme.type.caption).foregroundStyle(theme.color(\.textTertiary))
+                KeyHint("⇥")
+                Text("next").font(theme.type.caption).foregroundStyle(theme.color(\.textTertiary))
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Command 1 to 9 answers the focused session. Tab moves to the next.")
             Spacer()
             Button("Open cmux", action: onOpenCmux)
                 .buttonStyle(.plain)

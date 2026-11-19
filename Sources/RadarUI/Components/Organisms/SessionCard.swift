@@ -35,11 +35,13 @@ public struct SessionActions {
 public struct SessionCard: View {
     let session: SessionCardModel
     let actions: SessionActions
+    @Binding var draft: String
 
     @Environment(\.radarTheme) private var theme
 
-    public init(_ session: SessionCardModel, actions: SessionActions) {
+    public init(_ session: SessionCardModel, draft: Binding<String>, actions: SessionActions) {
         self.session = session
+        _draft = draft
         self.actions = actions
     }
 
@@ -91,6 +93,9 @@ public struct SessionCard: View {
                     onDeny: { actions.deny(session.id) },
                     onJump: { actions.jump(session.id) },
                 )
+            } else {
+                // No request details: there's still always something to do.
+                ActionButton("Jump to tab", style: .primary) { actions.jump(session.id) }
             }
         case .working:
             if let progress = session.progress {
@@ -105,12 +110,13 @@ public struct SessionCard: View {
         if let question = session.question {
             QuestionBlock(question)
         }
-        if !session.replies.isEmpty {
+        if session.canReply, !session.replies.isEmpty {
             ReplyChips(session.replies) { actions.pick(session.id, $0) }
         }
         ReplyField(
             placeholder: "Reply to \(session.name)…",
             canReply: session.canReply,
+            text: $draft,
             onReply: { actions.reply(session.id, $0) },
             onJump: { actions.jump(session.id) },
         )

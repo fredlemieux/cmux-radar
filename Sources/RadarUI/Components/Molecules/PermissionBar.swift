@@ -36,6 +36,8 @@ public struct PermissionBar: View {
                     Spacer()
                 }
                 ActionButton("Answer in terminal ⌥⏎", style: .primary, action: onJump)
+                    .accessibilityLabel("Answer in terminal")
+                    .accessibilityHint("Shortcut: option return.")
             } else {
                 HStack(spacing: theme.metrics.space6) {
                     ActionButton("Allow once", style: .primary, action: onAllow)

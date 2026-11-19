@@ -83,12 +83,19 @@ public nonisolated enum SampleSessions {
         summary: "Idle since Monday",
     )
 
-    /// A typical mixed day, in arrival order (the list sorts by urgency).
-    public static let typical: [SessionCardModel] = [working, idle, waiting, permission, idleOld]
+    /// A typical mixed day. Within each status the order is oldest first, as the app passes it;
+    /// the list sorts by urgency and keeps that order inside each group.
+    public static let typical: [SessionCardModel] = [working, idleOld, waiting, permission, idle]
 
     /// Twelve sessions, to check scrolling and density.
     public static let many: [SessionCardModel] = typical + (1 ... 7).map { number in
-        SessionCardModel(id: "service-\(number)", name: "service-\(number)", age: "\(number)h", status: .idle, summary: "Nothing new")
+        SessionCardModel(
+            id: "service-\(number)",
+            name: "service-\(number)",
+            age: "\(60 - number * 8)m",
+            status: .idle,
+            summary: "Nothing new",
+        )
     }
 
     public static let allWaiting: [SessionCardModel] = [waiting, waitingNoReplies, permission]
