@@ -1,4 +1,4 @@
-// MUTATION-VERIFIED: killed 14/14 mutants on 2026-11-19 (SuggestedReplies.swift)
+// MUTATION-VERIFIED: killed 20/20 mutants on 2026-11-19 (SuggestedReplies.swift)
 import PropertyBased
 @testable import RadarCore
 import Testing
@@ -100,6 +100,14 @@ extension SuggestedRepliesTests {
             #expect(suggestedReplies(from: "Disk:\n1.5 GB free\n2.0 is required").isEmpty)
         }
 
+        @Test func `treats a numbered sublist as detail`() {
+            #expect(suggestedReplies(from: "1. Foo\n   1. a\n   2. b\n2. Bar").map(\.label) == ["Foo", "Bar"])
+        }
+
+        @Test func `keeps only the closing list when two are separated by a blank line`() {
+            #expect(suggestedReplies(from: "1. Read\n2. Wrote\n\n1. Ship\n2. Wait").map(\.label) == ["Ship", "Wait"])
+        }
+
         @Test func `stops at prose above the list`() {
             #expect(suggestedReplies(from: "3. Earlier\nThen:\n1. Ship\n2. Wait").map(\.label) == ["Ship", "Wait"])
         }
@@ -143,24 +151,60 @@ struct IsASCIIDigitTests {
 }
 
 struct ListItemRuleTests {
+    @Test func `the first item sets the list level`() {
+        #expect(isTopLevel(3, nil))
+    }
+
+    @Test func `an item at the list level is top level`() {
+        #expect(isTopLevel(0, 0))
+    }
+
+    @Test func `a deeper item is not top level`() {
+        #expect(!isTopLevel(3, 0))
+    }
+
+    @Test func `a deeper line is detail`() {
+        #expect(isDetail(3, under: 0))
+    }
+
+    @Test func `a line at the list level is not detail`() {
+        #expect(!isDetail(0, under: 0))
+    }
+
+    @Test func `before any item, any indent is detail`() {
+        #expect(isDetail(1, under: nil))
+    }
+
+    @Test func `an unindented line before any item is not detail`() {
+        #expect(!isDetail(0, under: nil))
+    }
+
+    @Test func `the bottom item always starts the list`() {
+        #expect(continuesUpwards(SuggestedReply(number: 7, label: "x"), before: nil))
+    }
+
+    @Test func `the item above must be one less`() {
+        #expect(continuesUpwards(SuggestedReply(number: 2, label: "x"), before: SuggestedReply(number: 3, label: "y")))
+    }
+
+    @Test func `an item that restarts numbering ends the list`() {
+        #expect(!continuesUpwards(SuggestedReply(number: 2, label: "x"), before: SuggestedReply(number: 1, label: "y")))
+    }
+
+    @Test func `counts leading whitespace`() {
+        #expect(indentation("   - a") == 3)
+    }
+
+    @Test func `keeps markers inside a label`() {
+        #expect(plainText(" Use `__init__` ") == "Use `__init__`")
+    }
+
+    @Test func `a lone marker is not a wrapper`() {
+        #expect(!isWrapped("**", in: "**"))
+    }
+
     @Test func `requires a space after the marker`() {
         #expect(listItem("1.5 GB") == nil)
-    }
-
-    @Test func `a blank line belongs to a list`() {
-        #expect(belongsToList("   "))
-    }
-
-    @Test func `an indented detail line belongs to a list`() {
-        #expect(belongsToList("   - safer"))
-    }
-
-    @Test func `unindented prose does not belong to a list`() {
-        #expect(!belongsToList("Then:"))
-    }
-
-    @Test func `an empty line is not indented`() {
-        #expect(!isIndented(""))
     }
 
     @Test func `a dot is a list marker`() {
