@@ -28,7 +28,7 @@ Every value lives in `Theme`. Components read `Theme` from the environment; they
 | `border.strong` | white 14% | black 14% | Chips, outline buttons, input |
 | `text.primary` | `#F2F2F4` | `#111114` | Names, questions |
 | `text.secondary` | `#C9C9D1` | `#3C3C43` | Summaries |
-| `text.tertiary` | `#9A9AA5` | `#6B6B74` | Ages, paths, hints |
+| `text.tertiary` | `#9A9AA5` | `#65656D` | Ages, paths, hints |
 | `status.waiting` | `#F5A524` | `#9A6200` | Needs your reply |
 | `status.permission` | `#FF7A59` | `#C8431F` | Needs permission |
 | `status.working` | `#5B9DFF` | `#2F6FE0` | Agent is running |
@@ -92,12 +92,14 @@ struct SessionCardModel: Identifiable {
     let canReply: Bool          // false → reply field disabled, Jump offered
 }
 
-struct ReplyOption: Identifiable { let id: String; let index: Int; let label: String; let detail: String? }
-struct PermissionModel { let command: String; let expiresIn: String? }  // "1:48 left"
+struct ReplyOption: Identifiable { let index: Int; let label: String; let detail: String? }  // id == index; unique per session
+struct PermissionModel { let command: String; let expiresIn: String?; let expired: Bool }  // "1:48 left"
 struct StatusSummary { let waiting: Int; let permission: Int; let working: Int; let idle: Int }
 ```
 
-Actions reach components as closures: `onReply(String)`, `onPick(ReplyOption)`, `onAllow`, `onAlways`, `onDeny`, `onJump`.
+Actions reach organisms as one `SessionActions` value whose closures take the session id: `reply(id, text)`, `pick(id, option)`, `allow(id)`, `always(id)`, `deny(id)`, `jump(id)`. Molecules take plain closures (`onReply`, `onPick`, `onAllow`, `onAlways`, `onDeny`, `onJump`, `IdleRow.onOpen`).
+
+**Reply drafts belong to the container**, keyed by session id (`SessionList`/`ClassicPopover` take `drafts: Binding<[String: String]>`, `SessionCard` and `ReplyField` take a `Binding<String>`). The app clears a session's draft when its question changes or the reply is sent.
 
 ## 4. Component inventory
 
@@ -148,17 +150,19 @@ Atoms → molecules → organisms → templates. **Story** = one catalog entry a
 
 ## 5. Behaviour rules the components own
 
-- `SessionList` sorts by urgency: permission → waiting → working → idle; within a group, oldest first.
+- `SessionList` sorts by urgency: permission → waiting → working → idle. Within a group it keeps the input order; the app passes sessions oldest first. (The model carries a display age, not a timestamp, so the component can't sort by age itself.)
 - `ReplyField` submits on ⏎, trims whitespace, ignores empty input, and clears after `onReply`.
 - `ReplyChips` call `onPick`; they never type into the field.
-- A card with `canReply == false` swaps the reply field for a "Jump to tab" button: you can always act.
+- A card with `canReply == false` swaps the reply field for a "Jump to tab" button and hides its quick replies: you can always act, but never send to a session that can't take input.
+- A permission card without request details still offers "Jump to tab".
 - Long names and summaries truncate with an ellipsis; questions never truncate (they're the point).
 
 ## 6. Accessibility
 
 - Every `IconButton` has an accessibility label. Status dots carry the status name as their accessibility value.
 - Cards are accessibility containers labelled "‹name›, ‹status›".
-- All actions are reachable by keyboard: ⇥ moves between cards, ⌘1–9 picks a quick reply on the focused card, ⌥⏎ jumps.
+- All actions are reachable by keyboard (implemented in `SessionList`, mapping tested in `KeyCommandTests`): ⇥ moves focus between cards (focused card gets a ring), ⌘1–9 sends that quick reply on the focused card (only when it can take a reply), ⌥⏎ jumps to its tab.
+- Buttons whose titles show shortcut glyphs carry glyph-free accessibility labels.
 - Reduce Motion disables the pulse.
 
 ## 7. Delivery order

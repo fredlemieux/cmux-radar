@@ -24,3 +24,9 @@ Options considered:
 
 - Rendering tests depend on the macOS version's text rendering. References are recorded on the CI image's macOS major version, and the default precision (99.5% of pixels, per-channel tolerance 6) absorbs anti-aliasing noise.
 - We own ≈300 lines of snapshot tooling plus the catalog, a trade we accept for zero Xcode dependency and stories that double as tests.
+
+## Addendum (2026-11-19): two renderers
+
+`ImageRenderer` draws AppKit-backed controls (`TextField`) as a yellow "unsupported" placeholder, which `TextFieldRenderingTests` pins. Stories that contain a text field set `usesAppKitControls` and are rendered by `renderHostedBitmap`: an `NSHostingView` in an offscreen window, captured with `cacheDisplay`.
+
+Known artefact: offscreen capture (both `cacheDisplay` and `CALayer.render`) draws faint vertical lines just outside reply-chip capsules. Live window captures in dark and light mode show clean chips, so this is a capture artefact, not a component bug. Review hosted snapshots with that in mind; the `ImageRenderer` stories of the same components are the pixel-accurate reference.
