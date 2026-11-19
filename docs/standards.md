@@ -29,7 +29,7 @@ This repo follows the software-factory engineering standards. The canonical stan
 | One behaviour per test, `describe` / `it` | Nested types group scenarios (`struct WhenRecording`); each `@Test` checks one thing and uses a raw-identifier name that reads as a sentence: ``@Test func `rejects zero width`()``. SwiftFormat enforces the naming style. |
 | Every test asserts | `#expect` / `#require` in every test; reviewed in the Uncle Bob loop. |
 | No `.only` / `.skip` | `.disabled(` is a lint error (`no_disabled_tests`). |
-| Mutation testing is the arbiter | Muter (`make mutate`, `make mutate-changed`). Threshold 90 for core and snapshot logic. Rendering glue is excluded and covered by snapshot tests. |
+| Mutation testing is the arbiter | Muter (`make mutate`, `make mutate-changed`). Threshold 90 for core and snapshot logic. Rendering and file-system glue is excluded and covered by example tests (`RenderTests`, `AssertSnapshotTests`). |
 | Hybrid mutation gate | PR: changed files only. Nightly: full run. Both run on CI only while the repo is public (cost, see `architecture-and-costs.md`); while private, run `make mutate-changed` before pushing. |
 | Property-based tests | `PropertyBased` (`propertyCheck`). **Seeds are random per run; failures print the seed** (ADR 0003). |
 | Test-diary headers | First line of every test file: `// MUTATION-VERIFIED: killed X/Y mutants on <date>`. |

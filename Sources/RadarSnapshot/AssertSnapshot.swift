@@ -33,7 +33,14 @@ public func assertSnapshot(
         Issue.record("Could not render \(fullName)", sourceLocation: sourceLocation)
         return
     }
-    let reference = FileManager.default.contents(atPath: paths.reference).flatMap(PNGCodec.decode)
+    let referenceData = FileManager.default.contents(atPath: paths.reference)
+    let reference = referenceData.flatMap(PNGCodec.decode)
+    if referenceData != nil, reference == nil, !record {
+        // Never overwrite a reference we can't read (corrupt file, LFS pointer, conflict markers).
+        _ = write(actual, to: paths.failure, creating: paths.directory)
+        Issue.record("Reference at \(paths.reference) is not a readable PNG. Actual: \(paths.failure)", sourceLocation: sourceLocation)
+        return
+    }
     let verdict = judgeSnapshot(
         reference: reference,
         actual: actual,
@@ -50,19 +57,24 @@ private func report(_ verdict: SnapshotVerdict, actual: Bitmap, paths: SnapshotP
     case .matched:
         try? FileManager.default.removeItem(atPath: paths.failure)
     case let .recorded(reason):
-        write(actual, to: paths.reference, creating: paths.directory)
+        guard write(actual, to: paths.reference, creating: paths.directory) else {
+            Issue.record("Could not write snapshot to \(paths.reference)", sourceLocation: sourceLocation)
+            return
+        }
         Issue.record("Recorded snapshot (\(reason)) at \(paths.reference). Re-run to verify.", sourceLocation: sourceLocation)
     case let .mismatched(fraction):
-        write(actual, to: paths.failure, creating: paths.directory)
+        let wrote = write(actual, to: paths.failure, creating: paths.directory)
         let percent = (fraction * 1000).rounded() / 10
-        Issue.record("Snapshot differs by \(percent)% of pixels. Actual: \(paths.failure)", sourceLocation: sourceLocation)
+        let actualNote = wrote ? "Actual: \(paths.failure)" : "Could not write the actual image."
+        Issue.record("Snapshot differs by \(percent)% of pixels. \(actualNote)", sourceLocation: sourceLocation)
     }
 }
 
-private func write(_ bitmap: Bitmap, to path: String, creating directory: String) {
+/// Returns whether the PNG was written.
+private func write(_ bitmap: Bitmap, to path: String, creating directory: String) -> Bool {
     guard let data = PNGCodec.encode(bitmap) else {
-        return
+        return false
     }
     try? FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
-    FileManager.default.createFile(atPath: path, contents: data)
+    return FileManager.default.createFile(atPath: path, contents: data)
 }
