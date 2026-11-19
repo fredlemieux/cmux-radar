@@ -1,8 +1,9 @@
 public import SwiftUI
 
 /// The Radar skin's menu bar popover: an inbound strip, the scope, and the contact panel for the
-/// session calling in. ⇥ moves to the next caller, ⌘1–9 picks a quick reply, ⌥⏎ jumps to its tab.
-/// It applies the Radar theme itself, so it looks the same wherever it's placed.
+/// session calling in. ⌘] moves to the next caller, ⌘1–9 picks a quick reply, ⌥⏎ jumps to its tab;
+/// Tab is left to the system so every control stays reachable. It applies the Radar theme and a
+/// dark appearance itself (AppKit controls follow the appearance), so it looks the same anywhere.
 public struct RadarPopover: View {
     let sessions: [SessionCardModel]
     @Binding var drafts: [String: String]
@@ -28,6 +29,7 @@ public struct RadarPopover: View {
     public var body: some View {
         RadarPopoverBody(sessions: sessions, drafts: $drafts, actions: actions, onOpenCmux: onOpenCmux)
             .radarTheme(.radar, motion: motion)
+            .environment(\.colorScheme, .dark)
     }
 }
 
@@ -56,6 +58,8 @@ private struct RadarPopoverBody: View {
                 }
                 RadarScope(sessions)
                 RadarContact(callingIn, draft: draft, actions: actions)
+                    // A different caller is a different panel: focus and typing never carry over.
+                    .id(callingIn.map(draftKey))
                 Spacer(minLength: 0)
                 footer
             }
@@ -71,6 +75,7 @@ private struct RadarPopoverBody: View {
         .focusable()
         .focusEffectDisabled()
         .onKeyPress(phases: .down, action: handle)
+        .onChange(of: sessions, initial: true) { _, new in selected = pinnedContact(selected, in: new) }
     }
 
     private var callingIn: SessionCardModel? {
@@ -102,9 +107,11 @@ private struct RadarPopoverBody: View {
 
     private var footer: some View {
         HStack {
-            Text("⇥ NEXT CONTACT")
+            Text("⌘] NEXT CONTACT")
+                .accessibilityLabel("Command right bracket: next caller")
             Spacer()
             Text("⌥⏎ VECTOR TO TAB")
+                .accessibilityLabel("Option return: jump to the caller's tab")
             Spacer()
             Button("OPEN CMUX", action: onOpenCmux)
                 .buttonStyle(.plain)
@@ -115,23 +122,14 @@ private struct RadarPopoverBody: View {
     }
 
     private func handle(_ press: KeyPress) -> KeyPress.Result {
-        if press.key == .tab {
+        if isNextContactKey(characters: press.characters, command: press.modifiers.contains(.command)) {
             selected = nextContact(after: callingIn?.id, in: sessions)
             return .handled
         }
-        let command = keyCommand(
-            characters: press.characters,
-            isReturn: press.key == .return,
-            command: press.modifiers.contains(.command),
-            option: press.modifiers.contains(.option),
-        )
-        guard let command, let routed = route(command, focused: callingIn?.id, in: sessions) else {
+        guard let command = press.sessionCommand, let routed = route(command, focused: callingIn?.id, in: sessions) else {
             return .ignored
         }
-        switch routed {
-        case let .pick(id, option): actions.pick(id, option)
-        case let .jump(id): actions.jump(id)
-        }
+        actions.perform(routed)
         return .handled
     }
 }

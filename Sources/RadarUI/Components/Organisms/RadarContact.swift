@@ -35,6 +35,8 @@ public struct RadarContact: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, theme.metrics.space10)
+        // The Radar look is dark in both appearances; AppKit controls (the reply field) follow this.
+        .environment(\.colorScheme, .dark)
         .overlay(alignment: .top) {
             Line()
                 .stroke(theme.color(\.borderStrong), style: StrokeStyle(lineWidth: theme.metrics.hairline, dash: [4, 3]))
@@ -61,7 +63,9 @@ public struct RadarContact: View {
                 .foregroundStyle(theme.color(\.textTertiary))
         }
         .font(theme.type.caption)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(["Inbound from \(session.name)", session.location.map { "in \($0)" }, "\(session.age) ago"].compactMap(\.self)
+            .joined(separator: ", "))
     }
 
     @ViewBuilder

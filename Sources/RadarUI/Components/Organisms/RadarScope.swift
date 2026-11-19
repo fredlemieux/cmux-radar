@@ -8,7 +8,6 @@ public struct RadarScope: View {
     let diameter: CGFloat
 
     @Environment(\.radarTheme) private var theme
-    @State private var sweepAngle = 0.0
 
     public init(_ sessions: [SessionCardModel], diameter: CGFloat = 280) {
         self.sessions = sessions
@@ -18,13 +17,19 @@ public struct RadarScope: View {
     public var body: some View {
         ZStack {
             rings
-            sweep
+            // Gone, not frozen, when motion is reduced: a still wedge would sit over blips and
+            // dim them. Being its own view, it starts and stops live with the setting.
+            if !theme.reduceMotion {
+                Sweep(color: theme.status(.working))
+            }
             ForEach(sessions) { session in
                 let leads = tagLeads(bearing: blipBearing(for: session.id))
                 RadarBlip(session, tagLeads: leads)
                     // The blip's glyph, not its tag, marks the session's position.
                     .frame(width: 0, height: 0, alignment: leads ? .trailing : .leading)
-                    .offset(offset(of: session))
+                    .offset(offset(of: session, tagLeads: leads))
+                    // Callers draw over quiet sessions, so their tags stay readable.
+                    .zIndex(session.status.needsAttention ? 1 : 0)
             }
         }
         .frame(width: diameter, height: diameter)
@@ -44,31 +49,35 @@ public struct RadarScope: View {
         .accessibilityHidden(true)
     }
 
-    private var sweep: some View {
+    /// Shifted by half a glyph so the glyph's centre, not its edge, sits on the session's point.
+    private func offset(of session: SessionCardModel, tagLeads: Bool) -> CGSize {
+        let point = blipOffset(bearing: blipBearing(for: session.id), range: blipRange(for: session.status), radius: diameter / 2)
+        let halfGlyph: CGFloat = 5
+        return CGSize(width: point.width + (tagLeads ? halfGlyph : -halfGlyph), height: point.height)
+    }
+}
+
+/// The rotating beam: a trailing glow that turns once every four seconds.
+private struct Sweep: View {
+    let color: Color
+    @State private var angle = 0.0
+
+    var body: some View {
         Circle()
             .fill(AngularGradient(
                 stops: [
                     .init(color: .clear, location: 0),
                     .init(color: .clear, location: 0.8),
-                    .init(color: theme.status(.working).opacity(0.32), location: 1),
+                    .init(color: color.opacity(0.32), location: 1),
                 ],
                 center: .center,
             ))
-            .rotationEffect(.degrees(sweepAngle))
+            .rotationEffect(.degrees(angle))
             .accessibilityHidden(true)
-            .onAppear(perform: startSweep)
-    }
-
-    private func startSweep() {
-        guard !theme.reduceMotion else {
-            return
-        }
-        withAnimation(.linear(duration: 4).repeatForever(autoreverses: false)) {
-            sweepAngle = 360
-        }
-    }
-
-    private func offset(of session: SessionCardModel) -> CGSize {
-        blipOffset(bearing: blipBearing(for: session.id), range: blipRange(for: session.status), radius: diameter / 2)
+            .onAppear {
+                withAnimation(.linear(duration: 4).repeatForever(autoreverses: false)) {
+                    angle = 360
+                }
+            }
     }
 }
