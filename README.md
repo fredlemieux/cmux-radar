@@ -1,0 +1,91 @@
+# cmux-radar
+
+> See every AI coding agent running in [cmux](https://cmux.com) from your menu bar: which ones are working, which are waiting on you, and what they're asking. Answer without switching tabs.
+
+**Status:** pre-alpha. Design and architecture are settled; code is not written yet.
+
+---
+
+## Why
+
+cmux's notification menu tells you *that* an agent is waiting ("Claude is waiting for your input") but not *what* it wants. With six tabs open you end up clicking through each one to find out.
+
+cmux-radar shows every agent session as a card with:
+
+- **Status**: working, waiting on you, asking permission, idle
+- **What happened**: a short summary of the last turn
+- **The pending question**, in full, with one-tap suggested replies
+- **A reply box** that types your answer straight into that agent's cmux tab, so you don't have to switch to it
+- **Allow / Always / Deny** for permission prompts, inline
+
+## Surfaces
+
+| Surface | Trigger | Purpose |
+|---|---|---|
+| **Menu bar popover** | click the icon | Glanceable card stack. Answer the common case in one click. |
+| **Inbox panel** | `⌥Space` | Keyboard-first, two-pane: sessions on the left, full context and reply on the right. |
+| **cmux sidebar** | cmux right sidebar tab | Same cards inside cmux, built on cmux's sidebar extension support. |
+
+## Skins
+
+The presentation layer is swappable. All skins share the same data, keyboard shortcuts and reply behaviour. A skin only decides how things look.
+
+| Skin | Status | Feel |
+|---|---|---|
+| **Classic** | v1 (default) | Calm, functional card stack |
+| **Radar** | v1 | Phosphor scope. Sessions are blips; waiting ones flash amber; reply via a teletype panel |
+| Groovebox | open for contribution | Sessions as lit sampler pads |
+| Departures | open for contribution | Split-flap board; questions arrive as boarding passes |
+| Flyer | open for contribution | Acid rave flyer; sessions as the lineup, answers as tear-off tabs |
+
+Design mockups for all of these exist and will be linked here once the repo is public.
+
+## Architecture
+
+```
+cmux  ──  events stream · list-notifications · read-screen · send / send-key · Feed
+  │
+RadarCore            Swift package, no UI
+  ├─ CmuxClient      talks to the cmux socket / CLI
+  ├─ SessionStore    live [Session] view models (status, summary, question, options)
+  ├─ Actions         reply(), allow(), deny(), jump()
+  ├─ Summariser      optional; short "what happened" lines from the transcript
+  └─ Hotkeys         ⌘1–9 answer · ⇥ next · ⌥⏎ jump to tab · ⌥Space inbox
+  │
+RadarUI              shared building blocks: ReplyField, PermissionBar, StatusToken
+  │
+Skins                ClassicSkin · RadarSkin · …  (each one SwiftUI file implementing `Skin`)
+  │
+Apps                 menu bar app (MenuBarExtra) · cmux sidebar extension
+```
+
+### Design rules
+
+1. **cmux is the source of truth.** Radar reads cmux's own events and notifications and doesn't install any hooks of its own. If cmux knows an agent is waiting, Radar knows too.
+2. **Skins only draw.** Shortcuts, replies and permission decisions live in `RadarCore`, so a skin can't break answering.
+3. **Replies go only to idle or waiting sessions.** The reply box is disabled while an agent is mid-turn, so text never lands in the middle of one.
+4. **Local only.** Nothing leaves the machine except optional summaries, which are opt-in and use your own API key.
+
+## Requirements
+
+- macOS 14+
+- cmux 0.64+ with agent hooks enabled (`cmux hooks setup`)
+
+## Roadmap
+
+- [ ] `RadarCore`: cmux client, session store, actions
+- [ ] Classic skin + menu bar app
+- [ ] Inbox panel (`⌥Space`)
+- [ ] Radar skin
+- [ ] cmux sidebar extension
+- [ ] Summaries (opt-in)
+- [ ] Skin authoring guide + snapshot test harness
+- [ ] Homebrew cask
+
+## Contributing a skin
+
+Coming with v1: implement the `Skin` protocol in a single SwiftUI file, add snapshot tests for each session state (waiting, permission, working, idle, empty, many), and open a PR.
+
+## License
+
+MIT
