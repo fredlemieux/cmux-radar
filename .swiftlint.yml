@@ -31,7 +31,6 @@ opt_in_rules:
   # Style that helps review
   - closure_spacing
   - explicit_init
-  - modifier_order
   - multiline_arguments
   - operator_usage_whitespace
   - prefer_self_type_over_type_of_self
@@ -44,6 +43,7 @@ disabled_rules:
   - todo # Tracked in issues instead; TODO comments are allowed while a stack is in flight.
   - trailing_comma # SwiftFormat owns commas.
   - opening_brace # SwiftFormat owns brace placement.
+  - modifier_order # SwiftFormat owns modifier order (they disagree on `nonisolated`).
 
 force_cast: error
 force_try: error
@@ -76,6 +76,7 @@ custom_rules:
   no_disabled_tests:
     name: "No disabled tests"
     regex: '\.disabled\(|\.enabled\(\s*if:\s*false'
+    included: 'Tests/'
     message: "No skipped tests (docs/standards.md §3). Delete or fix it."
     severity: error
   no_print_in_sources:
