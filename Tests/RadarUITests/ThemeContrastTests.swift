@@ -53,12 +53,19 @@ struct HighlightedChipContrastTests {
     }
 }
 
-/// Status dots and fills are graphics: WCAG 1.4.11 asks for 3:1 against the popover.
+/// Status dots and fills are graphics: WCAG 1.4.11 asks for 3:1 against every surface they sit on.
 struct StatusGraphicContrastTests {
     @Test(arguments: SessionStatus.allCases, Appearance.allCases)
-    func `status colour meets the non-text minimum`(status: SessionStatus, appearance: Appearance) {
+    func `status colour meets the non-text minimum on the popover`(status: SessionStatus, appearance: Appearance) {
         let palette = Palette.classic
         let popover = palette.surfacePopover.value(for: appearance)
         #expect(contrastRatio(palette.status(status).value(for: appearance), popover) >= 3)
+    }
+
+    @Test(arguments: SessionStatus.allCases, Appearance.allCases)
+    func `status colour meets the non-text minimum on a card`(status: SessionStatus, appearance: Appearance) {
+        let palette = Palette.classic
+        let card = palette.surfaceCard.value(for: appearance).over(palette.surfacePopover.value(for: appearance))
+        #expect(contrastRatio(palette.status(status).value(for: appearance), card) >= 3)
     }
 }

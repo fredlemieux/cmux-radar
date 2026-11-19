@@ -32,14 +32,14 @@ Every value lives in `Theme`. Components read `Theme` from the environment; they
 | `status.waiting` | `#F5A524` | `#9A6200` | Needs your reply |
 | `status.permission` | `#FF7A59` | `#C8431F` | Needs permission |
 | `status.working` | `#5B9DFF` | `#2F6FE0` | Agent is running |
-| `status.idle` | `#6B6B76` | `#85858E` | Nothing to do |
+| `status.idle` | `#74747F` | `#85858E` | Nothing to do |
 | `onStatus.waiting` | `#1A1203` | `#FFFFFF` | Text on a waiting-coloured fill |
 | `onStatus.permission` | `#1F0A04` | `#FFFFFF` | Text on a permission-coloured fill |
 | `action.primary` / `onAction.primary` | `#ECECEF` / `#111114` | `#111114` / `#FFFFFF` | Allow once |
 
 **Contrast rules (tested):**
 - Text: every text token on `surface.popover`, every `onX` on its fill, and the highlighted chip's number on its tint meet WCAG AA 4.5:1. Hint text (`text.tertiary`) is ≥ 4.5:1 too, since it's small.
-- Graphics: every status colour is ≥ 3:1 on the popover (WCAG 1.4.11).
+- Graphics: every status colour is ≥ 3:1 on the popover and on a card (WCAG 1.4.11).
 - Count badges exist only in the two attention colours, the only fills with an on-colour.
 
 ### Type
