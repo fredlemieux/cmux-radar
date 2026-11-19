@@ -12,15 +12,16 @@ nonisolated extension Stories {
         Story(.atoms, "RadarBlip", "Tag leading", size: blipSize, theme: .radar) { _ in
             RadarBlip(SampleSessions.permission, tagLeads: true)
         },
-        Story(.atoms, "RadarBlip", "Question, reduced motion", size: blipSize, theme: .radar) { _ in
-            RadarBlip(SampleSessions.waiting).radarTheme(.radar, motion: .reduced)
-        },
     ]
 
     static let radarOrganisms: [Story] = [
         scope("Typical", SampleSessions.typical),
         scope("Twelve sessions", SampleSessions.many),
         scope("All quiet", []),
+        Story(.organisms, "RadarScope", "Typical, sweeping", size: CGSize(width: 312, height: 312), theme: .radar) { _ in
+            // The sweep's first frame; it turns once every four seconds in the app.
+            RadarScope(SampleSessions.typical).radarTheme(.radar, motion: .full)
+        },
         contactStory("Question", SampleSessions.waiting, height: 330),
         contactStory("Question, can't reply here", SampleSessions.waitingCantReply, height: 220),
         contactStory("Permission", SampleSessions.permission, height: 250),
@@ -31,6 +32,8 @@ nonisolated extension Stories {
     static let radarTemplates: [Story] = [
         radarPopover("Typical", SampleSessions.typical),
         radarPopover("Everything waiting", SampleSessions.allWaiting),
+        radarPopover("Question calling", [SampleSessions.working, SampleSessions.waiting, SampleSessions.idle]),
+        radarPopover("Twelve sessions", SampleSessions.many),
         radarPopover("All quiet", []),
     ]
 
