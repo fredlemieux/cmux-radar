@@ -15,8 +15,9 @@ files=()
 if [[ "${1:-}" == "--changed" ]]; then
   base="${2:?usage: mutate.sh --changed <base-ref>}"
   while IFS= read -r file; do files+=("$file"); done < <(
-    git diff --name-only --diff-filter=AM "$base"...HEAD -- 'Sources/RadarCore/*.swift' 'Sources/RadarSnapshot/*.swift' |
-      grep -vE 'Sources/RadarSnapshot/(Render|AssertSnapshot)\.swift' || true
+    git diff --name-only --diff-filter=AM "$base"...HEAD -- \
+      'Sources/RadarCore/*.swift' 'Sources/RadarSnapshot/*.swift' 'Sources/RadarUI/*.swift' |
+      grep -vE 'Sources/RadarSnapshot/(Render|AssertSnapshot)\.swift|Sources/RadarUI/(Components/|Theme/Theme\.swift)' || true
   )
   if [[ ${#files[@]} -eq 0 ]]; then
     echo "No mutable sources changed since $base — skipping."
@@ -28,7 +29,7 @@ fi
 {
   echo "executable: $(command -v swift)"
   echo "arguments:"
-  printf -- '- %s\n' test --scratch-path .build-mutate --disable-get-task-allow-entitlement -Xswiftc -no-warnings-as-errors
+  printf -- '- %s\n' test --skip StorySnapshotTests --scratch-path .build-mutate --disable-get-task-allow-entitlement -Xswiftc -no-warnings-as-errors
   for flag in $(scripts/swift-test-flags.sh); do printf -- '- %s\n' "$flag"; done
   cat <<'YAML'
 exclude:
@@ -36,7 +37,9 @@ exclude:
 - Tests
 - .build
 - .build-mutate
-- Sources/RadarUI
+- Sources/RadarUI/Components
+- Sources/RadarUI/Theme/Theme.swift
+- Sources/RadarStories
 - Sources/RadarCatalog
 - Sources/RadarSnapshot/Render.swift
 - Sources/RadarSnapshot/AssertSnapshot.swift
