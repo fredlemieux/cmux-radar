@@ -12,11 +12,14 @@ if ! [[ "$subject" =~ $pattern ]]; then
   exit 1
 fi
 # Stop at the scissors line: `git commit -v` appends the diff below it, which isn't part of the body.
-if awk '/^# -+ >8 -+$/ { exit } NR > 2 && length($0) > 100 && $0 !~ /^#/' "$file" | grep -q .; then
+comment="$(git config --get core.commentChar 2>/dev/null || echo '#')"
+[[ "$comment" == "auto" || -z "$comment" ]] && comment='#'
+if awk -v c="$comment" 'index($0, c " ------------------------ >8") == 1 { exit }
+  NR > 2 && length($0) > 100 && index($0, c) != 1' "$file" | grep -q .; then
   echo "✗ Commit body lines must be ≤ 100 characters." >&2
   exit 1
 fi
-if grep -qiE '^co-authored-by:.*(claude|anthropic)' "$file"; then
+if grep -qiE '^co-authored-by:.*noreply@anthropic\.com' "$file"; then
   echo "✗ No AI attribution lines (docs/standards.md §6). Human co-authors are fine." >&2
   exit 1
 fi
