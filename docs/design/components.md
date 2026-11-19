@@ -99,7 +99,7 @@ struct StatusSummary { let waiting: Int; let permission: Int; let working: Int; 
 
 Actions reach organisms as one `SessionActions` value whose closures take the session id: `reply(id, text)`, `pick(id, option)`, `allow(id)`, `always(id)`, `deny(id)`, `jump(id)`. Molecules take plain closures (`onReply`, `onPick`, `onAllow`, `onAlways`, `onDeny`, `onJump`, `IdleRow.onOpen`).
 
-**Reply drafts belong to the container**, keyed by session id (`SessionList`/`ClassicPopover` take `drafts: Binding<[String: String]>`, `SessionCard` and `ReplyField` take a `Binding<String>`). The app clears a session's draft when its question changes or the reply is sent.
+**Reply drafts belong to the container**, keyed by `draftKey(for:)`: the session id plus the question it answers (`SessionList`/`ClassicPopover` take `drafts: Binding<[String: String]>`, `SessionCard` and `ReplyField` take a `Binding<String>`). A new question has a new key, so an old draft never appears under it; the container drops a draft once its reply is sent.
 
 ## 4. Component inventory
 

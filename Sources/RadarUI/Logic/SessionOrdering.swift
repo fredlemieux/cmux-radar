@@ -41,3 +41,9 @@ nonisolated func normalisedReply(_ text: String) -> String? {
 nonisolated func needVerb(for count: Int) -> String {
     count == 1 ? "needs" : "need"
 }
+
+/// The key a reply draft is stored under: the session and the question it answers. A new question
+/// gets a new key, so a draft written for the old one is never shown (or sent) against it.
+public nonisolated func draftKey(for session: SessionCardModel) -> String {
+    session.id + "\u{1F}" + (session.question ?? "")
+}

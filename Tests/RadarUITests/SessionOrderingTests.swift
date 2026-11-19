@@ -121,3 +121,23 @@ struct NeedVerbTests {
         #expect(needVerb(for: 2) == "need")
     }
 }
+
+struct DraftKeyTests {
+    @Test func `differs when the question changes`() {
+        let before = SessionCardModel(id: "s", name: "s", age: "1m", status: .waiting, question: "Ship it?")
+        let after = SessionCardModel(id: "s", name: "s", age: "1m", status: .waiting, question: "Which region?")
+        #expect(draftKey(for: before) != draftKey(for: after))
+    }
+
+    @Test func `differs between sessions asking the same question`() {
+        let one = SessionCardModel(id: "a", name: "a", age: "1m", status: .waiting, question: "Ship it?")
+        let two = SessionCardModel(id: "b", name: "b", age: "1m", status: .waiting, question: "Ship it?")
+        #expect(draftKey(for: one) != draftKey(for: two))
+    }
+
+    @Test func `is stable while the question stays`() {
+        let typed = SessionCardModel(id: "s", name: "s", age: "1m", status: .waiting, question: "Ship it?")
+        let refreshed = SessionCardModel(id: "s", name: "s", age: "2m", status: .waiting, question: "Ship it?")
+        #expect(draftKey(for: typed) == draftKey(for: refreshed))
+    }
+}

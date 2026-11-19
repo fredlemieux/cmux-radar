@@ -133,7 +133,8 @@ private struct PopoverPlayground: View {
     }
 
     private func startWorking(_ id: String, on summary: String) {
-        drafts[id] = nil // The container owns drafts: an answered question's draft is gone.
+        // The container owns drafts: an answered question's draft is gone.
+        sessions.filter { $0.id == id }.forEach { drafts[draftKey(for: $0)] = nil }
         replace(id) { SessionCardModel(
             id: $0.id,
             name: $0.name,
