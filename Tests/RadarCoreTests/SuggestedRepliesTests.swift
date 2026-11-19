@@ -1,4 +1,4 @@
-// MUTATION-VERIFIED: killed 10/10 mutants on 2026-11-19 (SuggestedReplies.swift)
+// MUTATION-VERIFIED: killed 14/14 mutants on 2026-11-19 (SuggestedReplies.swift)
 import PropertyBased
 @testable import RadarCore
 import Testing
@@ -73,6 +73,39 @@ struct SuggestedRepliesTests {
     }
 }
 
+extension SuggestedRepliesTests {
+    struct WithRealisticAgentFormatting {
+        @Test func `keeps items that carry nested bullets`() {
+            let message = "Options:\n1. Flag\n   - safer\n2. Everyone\n   - faster"
+            #expect(suggestedReplies(from: message).map(\.label) == ["Flag", "Everyone"])
+        }
+
+        @Test func `keeps items separated by blank lines`() {
+            #expect(suggestedReplies(from: "Pick one:\n\n1. Flag\n\n2. Everyone").count == 2)
+        }
+
+        @Test func `reads bold numbers`() {
+            #expect(suggestedReplies(from: "**1.** Flag\n**2.** Everyone").map(\.number) == [1, 2])
+        }
+
+        @Test func `drops markdown emphasis from labels`() {
+            #expect(suggestedReplies(from: "1. **Feature flag**\n2. `Everyone`").map(\.label) == ["Feature flag", "Everyone"])
+        }
+
+        @Test func `reads windows line endings`() {
+            #expect(suggestedReplies(from: "1. Yes\r\n2. No\r\n").count == 2)
+        }
+
+        @Test func `ignores decimals that look like numbering`() {
+            #expect(suggestedReplies(from: "Disk:\n1.5 GB free\n2.0 is required").isEmpty)
+        }
+
+        @Test func `stops at prose above the list`() {
+            #expect(suggestedReplies(from: "3. Earlier\nThen:\n1. Ship\n2. Wait").map(\.label) == ["Ship", "Wait"])
+        }
+    }
+}
+
 struct ListItemTests {
     @Test func `reads a dotted item`() {
         #expect(listItem("4. Four") == SuggestedReply(number: 4, label: "Four"))
@@ -106,5 +139,47 @@ struct IsASCIIDigitTests {
 
     @Test func `rejects a non-ascii digit`() {
         #expect(!isASCIIDigit("٣"))
+    }
+}
+
+struct ListItemRuleTests {
+    @Test func `requires a space after the marker`() {
+        #expect(listItem("1.5 GB") == nil)
+    }
+
+    @Test func `a blank line belongs to a list`() {
+        #expect(belongsToList("   "))
+    }
+
+    @Test func `an indented detail line belongs to a list`() {
+        #expect(belongsToList("   - safer"))
+    }
+
+    @Test func `unindented prose does not belong to a list`() {
+        #expect(!belongsToList("Then:"))
+    }
+
+    @Test func `an empty line is not indented`() {
+        #expect(!isIndented(""))
+    }
+
+    @Test func `a dot is a list marker`() {
+        #expect(isListMarker("."))
+    }
+
+    @Test func `a parenthesis is a list marker`() {
+        #expect(isListMarker(")"))
+    }
+
+    @Test func `a colon is not a list marker`() {
+        #expect(!isListMarker(":"))
+    }
+
+    @Test func `drops leading underscores bold`() {
+        #expect(withoutEmphasisMarker("__1.") == "1.")
+    }
+
+    @Test func `drops underscores emphasis from a label`() {
+        #expect(plainText(" __Ship__ ") == "Ship")
     }
 }
