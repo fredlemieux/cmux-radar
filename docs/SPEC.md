@@ -86,8 +86,8 @@ enum PendingDecision {
 
 In code (`Sources/RadarCore`): adapters decode cmux frames into `RadarEvent`s, and `reduce` applies them. Edge rules the table leaves open, because events can be late, replayed (bootstrap, resume gaps) or interleaved by parallel tools:
 
-- **Stale events.** Order comes from the stream's `seq`, never the clock. Hooks, Feed and notifications stamp their times at different moments, and one source's clock can be skewed. An event from earlier in the stream than the last one applied to a session never changes it. So a replayed "Waiting" notification or a late Stop can't flip a newer turn to `waiting`, which would let Radar type mid-turn. Bootstrap snapshots carry the stream position they were read at.
-- **Context.** Later events fill in context the session lacked, such as a surface that was `null`. They never blank out known context, and never move a session to a different surface or workspace: typing into the wrong tab is worse than not typing.
+- **Stale events.** Order comes from the stream's `seq`, never the clock. Hooks, Feed and notifications stamp their times at different moments, and one source's clock can be skewed. An event from earlier in the stream than the last one applied to a session never changes it. So a replayed "Waiting" notification or a late Stop can't flip a newer turn to `waiting`, which would let Radar type mid-turn. Bootstrap snapshots carry the stream position they were read at, and a snapshot only changes a session if it's strictly newer than the last live event at that position. So a re-read "Waiting" notification can never undo a turn that started at the same position.
+- **Context.** Later events fill in context the session lacked, such as a surface that was `null`. They never blank out known context, and never move a live session to a different surface or workspace: typing into the wrong tab is worse than not typing. A session resumed after it ended (a new prompt) takes the surface and workspace it resumed in.
 - **Decisions.**
   - Resolution is keyed by `request_id` alone and closes only the decision holding that id.
   - A bootstrap `feed.list` closes any open decision Feed no longer holds (it was resolved during a resume gap).
@@ -105,6 +105,8 @@ Known v1 limits:
 
 - **One open decision per session.** If two subagents ask at once, the newer request replaces the older on the card, and the older can still be answered in the terminal via Jump.
 - **A `working` session never ages.** If both Stop and the Waiting notification are missed, it stays working until the next event.
+- **Event times are taken as stamped.** A source whose clock runs ahead delays idle, hide and the Feed expiry by the same amount. Ordering is unaffected because it uses `seq`. A fix is to stamp `pendingSince` with Radar's own receive time; this is tracked for the adapter PR.
+- **A decision Feed dropped during a resume gap goes back to `working`.** It should instead stay visible as "answer in terminal"; this is tracked for the adapter PR.
 
 ### Bootstrap and resume
 
