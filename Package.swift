@@ -57,6 +57,7 @@ let package = Package(
                 "RadarSnapshot",
                 .product(name: "PropertyBased", package: "swift-property-based"),
             ],
+            exclude: ["__Snapshots__"],
             swiftSettings: strict,
         ),
     ],
