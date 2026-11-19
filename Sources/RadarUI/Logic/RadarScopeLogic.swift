@@ -86,7 +86,7 @@ nonisolated func isNextContactKey(characters: String, command: Bool) -> Bool {
     command && characters == "]"
 }
 
-/// The next session that needs you after `current`, wrapping round (⇥ in the Radar skin).
+/// The next session that needs you after `current`, wrapping round (⌘] in the Radar skin).
 nonisolated func nextContact(after current: String?, in sessions: [SessionCardModel]) -> String? {
     let ids = contacts(in: sessions).map(\.id)
     for (index, id) in ids.enumerated() where id == current {
