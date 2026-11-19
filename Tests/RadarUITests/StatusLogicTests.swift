@@ -68,3 +68,21 @@ struct SectionLabelColourTests {
         #expect(!sectionLabelUsesStatusColor(.idle))
     }
 }
+
+struct ReducesMotionTests {
+    @Test func `follows the system when it reduces motion`() {
+        #expect(reducesMotion(.system, system: true))
+    }
+
+    @Test func `follows the system when it allows motion`() {
+        #expect(!reducesMotion(.system, system: false))
+    }
+
+    @Test func `reduced always reduces`() {
+        #expect(reducesMotion(.reduced, system: false))
+    }
+
+    @Test func `full never reduces`() {
+        #expect(!reducesMotion(.full, system: true))
+    }
+}

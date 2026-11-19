@@ -33,3 +33,12 @@ nonisolated func progressAccessibilityValue(_ fraction: Double) -> String {
 nonisolated func sectionLabelUsesStatusColor(_ status: SessionStatus) -> Bool {
     status != .idle
 }
+
+/// Whether motion is reduced for a preference, given the system's Reduce Motion setting.
+nonisolated func reducesMotion(_ preference: MotionPreference, system: Bool) -> Bool {
+    switch preference {
+    case .system: system
+    case .reduced: true
+    case .full: false
+    }
+}

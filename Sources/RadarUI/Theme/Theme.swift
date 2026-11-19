@@ -175,18 +175,10 @@ private struct RadarThemeModifier: ViewModifier {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
 
-    private var reduces: Bool {
-        switch motion {
-        case .system: systemReduceMotion
-        case .reduced: true
-        case .full: false
-        }
-    }
-
     func body(content: Content) -> some View {
         content.environment(
             \.radarTheme,
-            theme.resolved(for: colorScheme == .dark ? .dark : .light, reduceMotion: reduces),
+            theme.resolved(for: colorScheme == .dark ? .dark : .light, reduceMotion: reducesMotion(motion, system: systemReduceMotion)),
         )
     }
 }
