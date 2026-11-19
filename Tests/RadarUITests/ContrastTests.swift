@@ -1,6 +1,6 @@
 // MUTATION-VERIFIED: killed 1/1 mutants on 2026-11-19 (RGBA.swift; Muter has no arithmetic operators, see docs/standards.md)
 import PropertyBased
-import RadarUI
+@testable import RadarUI
 import Testing
 
 private let channel = Gen.double(in: 0 ... 1)

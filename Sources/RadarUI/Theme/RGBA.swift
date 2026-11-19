@@ -45,7 +45,7 @@ public nonisolated struct RGBA: Equatable, Sendable {
 }
 
 /// WCAG 2.x contrast ratio between two opaque colours, 1…21. Order doesn't matter.
-public nonisolated func contrastRatio(_ first: RGBA, _ second: RGBA) -> Double {
+nonisolated func contrastRatio(_ first: RGBA, _ second: RGBA) -> Double {
     let lighter = max(first.relativeLuminance, second.relativeLuminance)
     let darker = min(first.relativeLuminance, second.relativeLuminance)
     return (lighter + 0.05) / (darker + 0.05)

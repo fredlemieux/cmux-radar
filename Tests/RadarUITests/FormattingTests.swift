@@ -1,6 +1,6 @@
 // MUTATION-VERIFIED: killed 3/3 mutants on 2026-11-19 (Logic/Formatting.swift)
 import PropertyBased
-import RadarUI
+@testable import RadarUI
 import Testing
 
 struct BadgeTextTests {

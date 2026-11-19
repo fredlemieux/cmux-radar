@@ -1,5 +1,5 @@
 // MUTATION-VERIFIED: n/a — checks token values, not logic
-import RadarUI
+@testable import RadarUI
 import Testing
 
 /// Every readable pairing in the Classic palette meets WCAG AA (4.5:1) in both appearances.
@@ -25,6 +25,7 @@ struct ThemeContrastTests {
         Pairing(name: "permission label on popover", foreground: { $0.statusPermission }, background: { $0.surfacePopover }),
         Pairing(name: "working label on popover", foreground: { $0.statusWorking }, background: { $0.surfacePopover }),
         Pairing(name: "text on waiting fill", foreground: { $0.onStatusWaiting }, background: { $0.statusWaiting }),
+        Pairing(name: "text on permission fill", foreground: { $0.onStatusPermission }, background: { $0.statusPermission }),
         Pairing(name: "text on primary action", foreground: { $0.onActionPrimary }, background: { $0.actionPrimary }),
     ]
 
@@ -36,5 +37,28 @@ struct ThemeContrastTests {
         let background = pairing.background(palette).value(for: appearance).over(popover)
         let foreground = pairing.foreground(palette).value(for: appearance).over(background)
         #expect(contrastRatio(foreground, background) >= 4.5)
+    }
+}
+
+/// The highlighted reply chip draws its number in secondary text on a waiting tint.
+struct HighlightedChipContrastTests {
+    @Test(arguments: Appearance.allCases)
+    func `number meets wcag aa on the tinted fill`(appearance: Appearance) {
+        let palette = Palette.classic
+        let popover = palette.surfacePopover.value(for: appearance)
+        let waiting = palette.statusWaiting.value(for: appearance)
+        let tint = RGBA(red: waiting.red, green: waiting.green, blue: waiting.blue, alpha: Opacity().tint).over(popover)
+        let number = palette.textSecondary.value(for: appearance).over(tint)
+        #expect(contrastRatio(number, tint) >= 4.5)
+    }
+}
+
+/// Status dots and fills are graphics: WCAG 1.4.11 asks for 3:1 against the popover.
+struct StatusGraphicContrastTests {
+    @Test(arguments: SessionStatus.allCases, Appearance.allCases)
+    func `status colour meets the non-text minimum`(status: SessionStatus, appearance: Appearance) {
+        let palette = Palette.classic
+        let popover = palette.surfacePopover.value(for: appearance)
+        #expect(contrastRatio(palette.status(status).value(for: appearance), popover) >= 3)
     }
 }

@@ -1,5 +1,5 @@
-// MUTATION-VERIFIED: n/a — no mutable operators in Palette/SessionStatus; verified by example
-import RadarUI
+// MUTATION-VERIFIED: n/a — token values and mappings, no mutable logic; verified by example
+@testable import RadarUI
 import Testing
 
 struct SessionStatusTests {
@@ -19,16 +19,26 @@ struct SessionStatusTests {
 }
 
 struct PaletteStatusTests {
-    @Test(arguments: SessionStatus.allCases)
-    func `maps each status to its own token`(status: SessionStatus) {
-        let palette = Palette.classic
-        let expected: [SessionStatus: ColorToken] = [
-            .waiting: palette.statusWaiting,
-            .permission: palette.statusPermission,
-            .working: palette.statusWorking,
-            .idle: palette.statusIdle,
-        ]
-        #expect(palette.status(status) == expected[status])
+    @Test(arguments: Appearance.allCases)
+    func `gives every status a distinct colour`(appearance: Appearance) {
+        let colours = SessionStatus.allCases.map { Palette.classic.status($0).value(for: appearance) }
+        #expect(Set(colours.map { "\($0.red),\($0.green),\($0.blue)" }).count == SessionStatus.allCases.count)
+    }
+
+    @Test func `maps waiting to the waiting token`() {
+        #expect(Palette.classic.status(.waiting) == Palette.classic.statusWaiting)
+    }
+
+    @Test func `maps permission to the permission token`() {
+        #expect(Palette.classic.status(.permission) == Palette.classic.statusPermission)
+    }
+
+    @Test func `maps working to the working token`() {
+        #expect(Palette.classic.status(.working) == Palette.classic.statusWorking)
+    }
+
+    @Test func `maps idle to the idle token`() {
+        #expect(Palette.classic.status(.idle) == Palette.classic.statusIdle)
     }
 
     @Test func `resolves the dark value in dark mode`() {

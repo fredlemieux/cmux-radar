@@ -39,6 +39,7 @@ public nonisolated struct Palette: Equatable, Sendable {
     public var statusWorking: ColorToken
     public var statusIdle: ColorToken
     public var onStatusWaiting: ColorToken
+    public var onStatusPermission: ColorToken
     public var actionPrimary: ColorToken
     public var onActionPrimary: ColorToken
 
@@ -68,8 +69,9 @@ public nonisolated extension Palette {
         statusWaiting: ColorToken(dark: RGBA(hex: 0xF5A524), light: RGBA(hex: 0x9A6200)),
         statusPermission: ColorToken(dark: RGBA(hex: 0xFF7A59), light: RGBA(hex: 0xC8431F)),
         statusWorking: ColorToken(dark: RGBA(hex: 0x5B9DFF), light: RGBA(hex: 0x2F6FE0)),
-        statusIdle: ColorToken(dark: RGBA(hex: 0x6B6B76), light: RGBA(hex: 0xA0A0A8)),
+        statusIdle: ColorToken(dark: RGBA(hex: 0x6B6B76), light: RGBA(hex: 0x85858E)),
         onStatusWaiting: ColorToken(dark: RGBA(hex: 0x1A1203), light: RGBA(hex: 0xFFFFFF)),
+        onStatusPermission: ColorToken(dark: RGBA(hex: 0x1F0A04), light: RGBA(hex: 0xFFFFFF)),
         actionPrimary: ColorToken(dark: RGBA(hex: 0xECECEF), light: RGBA(hex: 0x111114)),
         onActionPrimary: ColorToken(dark: RGBA(hex: 0x111114), light: RGBA(hex: 0xFFFFFF)),
     )
