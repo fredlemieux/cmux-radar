@@ -114,7 +114,7 @@ Works with full Xcode or just the Command Line Tools (`xcode-select --install`);
 | SwiftLint: `Loading sourcekitdInProc.framework failed` | Use `make lint` (wraps SwiftLint with the CLT SourceKit path). |
 | A snapshot test fails with "Recorded snapshot" | Expected on first run of a new snapshot: review the PNG, re-run. |
 | A snapshot differs | Open `<name>.failure.png` next to the reference. If the change is intended: `make snapshots-record`. |
-| lefthook says `core.hooksPath is set globally` | `make bootstrap` sets a repo-local hooks path and still runs your global hooks. |
+| lefthook says `core.hooksPath is set globally` | `make bootstrap` sets a repo-local hooks path; each hook still runs your global hook of the same name first. |
 
 ### Costs
 
