@@ -28,7 +28,11 @@ public func assertSnapshot(
     filePath: String = #filePath,
     sourceLocation: SourceLocation = #_sourceLocation,
 ) {
-    let fullName = "\(name).\(colorScheme == .dark ? "dark" : "light")"
+    let schemed = "\(name).\(colorScheme == .dark ? "dark" : "light")"
+    let fullName = switch renderer {
+    case .image: schemed
+    case .hosted: hostedSnapshotName(schemed, backingScale: hostedBackingScale())
+    }
     let paths = snapshotPaths(testFile: filePath, name: fullName)
     let rendered = switch renderer {
     case .image: renderBitmap(view, size: size, colorScheme: colorScheme)

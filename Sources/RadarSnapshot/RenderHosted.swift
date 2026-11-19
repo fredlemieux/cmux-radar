@@ -10,6 +10,22 @@ public nonisolated enum SnapshotRenderer: Sendable {
     case hosted
 }
 
+/// The backing scale the hosted renderer's window lays out at: the main screen's, or 1 without one.
+///
+/// AppKit snaps positions and glyphs to this grid, so a 1× display (an external monitor, a CI
+/// runner) draws edges a fraction of a pixel away from a Retina display, even though the bitmap
+/// is always 2×. Within one scale the output is byte-identical across machines.
+@MainActor
+public func hostedBackingScale() -> CGFloat {
+    NSScreen.main?.backingScaleFactor ?? 1
+}
+
+/// The reference name for a hosted snapshot: unchanged at 2×, suffixed with the scale otherwise
+/// (`card.dark.1x`), so each display scale is compared strictly against its own reference.
+public nonisolated func hostedSnapshotName(_ name: String, backingScale: CGFloat) -> String {
+    backingScale == 2 ? name : "\(name).\(Int(backingScale))x"
+}
+
 /// Renders `view` in an offscreen `NSHostingView` at `scale`× and returns its pixels.
 @MainActor
 public func renderHostedBitmap(

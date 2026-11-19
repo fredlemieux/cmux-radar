@@ -30,3 +30,11 @@ Options considered:
 `ImageRenderer` draws AppKit-backed controls (`TextField`) as a yellow "unsupported" placeholder, which `TextFieldRenderingTests` pins. Stories that contain a text field set `usesAppKitControls` and are rendered by `renderHostedBitmap`: an `NSHostingView` in an offscreen window, captured with `cacheDisplay`.
 
 Known artefact: offscreen capture (both `cacheDisplay` and `CALayer.render`) draws faint vertical lines just outside reply-chip capsules. Live window captures in dark and light mode show clean chips, so this is a capture artefact, not a component bug. Review hosted snapshots with that in mind; the `ImageRenderer` stories of the same components are the pixel-accurate reference.
+
+## Addendum (2026-11-19): hosted references are keyed by display scale
+
+The hosted renderer's window lays out on the main screen's backing grid. A 1× display (an external monitor, or a CI runner, which has no Retina screen) snaps glyphs and edges to whole points, so the 2× bitmap differs from one captured on a Retina display by a fraction of a pixel at every edge (0.8–10% of pixels; fills identical). No threshold separates that from a real change such as a status colour.
+
+Within one scale the output is byte-identical across machines: the 1× images rendered on CI and on a development machine with a 1× display matched exactly. So hosted references are named per scale: `<name>.png` at 2×, `<name>.1x.png` at 1× (`hostedSnapshotName`). Each scale is compared strictly against its own reference; none is skipped or loosened.
+
+Changing a hosted story means recording both scales. Record the one your display uses with `make test`; for the other, either switch displays or take the images CI recorded from the `snapshots` artifact of the failing run, review them, and commit them.
