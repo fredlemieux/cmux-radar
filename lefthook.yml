@@ -29,5 +29,6 @@ pre-push:
   commands:
     1_global-hook:
       run: scripts/run-global-hook.sh pre-push {0}
+      use_stdin: true # git passes the pushed refs on stdin
     2_check:
       run: make build test
