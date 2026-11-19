@@ -25,6 +25,8 @@ public nonisolated struct Story: Identifiable, Sendable, CustomStringConvertible
     /// True when the story contains AppKit-backed controls (text fields), which only the hosted
     /// snapshot renderer can draw.
     public let usesAppKitControls: Bool
+    /// The skin the story is drawn in.
+    public let theme: Theme
 
     public init(
         _ level: StoryLevel,
@@ -32,9 +34,11 @@ public nonisolated struct Story: Identifiable, Sendable, CustomStringConvertible
         _ name: String,
         size: CGSize,
         usesAppKitControls: Bool = false,
+        theme: Theme = .classic,
         render: @escaping @MainActor @Sendable (StoryContext) -> some View,
     ) {
         self.usesAppKitControls = usesAppKitControls
+        self.theme = theme
         self.level = level
         self.component = component
         self.name = name
@@ -81,9 +85,10 @@ public struct StoryCanvas: View {
     let theme: Theme
     let context: StoryContext
 
-    public init(_ story: Story, theme: Theme = .classic, context: StoryContext = .silent) {
+    /// Draws `story` in its own skin, or in `theme` when given.
+    public init(_ story: Story, theme: Theme? = nil, context: StoryContext = .silent) {
         self.story = story
-        self.theme = theme
+        self.theme = theme ?? story.theme
         self.context = context
     }
 
