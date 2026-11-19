@@ -1,14 +1,13 @@
 public import SwiftUI
 
-/// A session's status as a dot. Statuses that need attention get a soft ring and, when
-/// `pulsing`, breathe (unless Reduce Motion is on).
+/// A session's status as a dot. Each status has its own colour **and** shape (halo, ring, solid,
+/// hollow), so it reads without colour vision. Attention statuses breathe when `pulsing`, unless
+/// Reduce Motion is on; the pulse follows status and preference changes live.
 public struct StatusDot: View {
     let status: SessionStatus
     let pulsing: Bool
 
     @Environment(\.radarTheme) private var theme
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var expanded = false
 
     public init(_ status: SessionStatus, pulsing: Bool = false) {
         self.status = status
@@ -16,31 +15,52 @@ public struct StatusDot: View {
     }
 
     public var body: some View {
-        let color = theme.status(status)
-        Circle()
-            .fill(color)
-            .frame(width: theme.metrics.dot, height: theme.metrics.dot)
-            .background {
-                if status.needsAttention {
-                    Circle()
-                        .fill(color.opacity(0.22))
-                        .frame(width: theme.metrics.dot * 2, height: theme.metrics.dot * 2)
-                        .scaleEffect(expanded ? 1.25 : 1)
-                }
-            }
-            .frame(width: theme.metrics.dot * 2, height: theme.metrics.dot * 2)
-            .onAppear(perform: startPulse)
-            .accessibilityElement()
-            .accessibilityLabel("Status")
-            .accessibilityValue(status.accessibilityName)
+        let size = theme.metrics.dot
+        ZStack {
+            decoration
+            core
+        }
+        .frame(width: size * 2, height: size * 2)
+        .accessibilityElement()
+        .accessibilityLabel("Status")
+        .accessibilityValue(status.accessibilityName)
     }
 
-    private func startPulse() {
-        guard pulsing, status.needsAttention, !reduceMotion else {
-            return
+    @ViewBuilder private var core: some View {
+        let color = theme.status(status)
+        let size = theme.metrics.dot
+        switch dotTreatment(for: status) {
+        case .hollow:
+            Circle().strokeBorder(color, lineWidth: theme.metrics.dotRingWidth).frame(width: size, height: size)
+        case .halo, .ring, .solid:
+            Circle().fill(color).frame(width: size, height: size)
         }
-        withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
-            expanded = true
+    }
+
+    @ViewBuilder private var decoration: some View {
+        let color = theme.status(status)
+        let size = theme.metrics.dot * 2
+        switch dotTreatment(for: status) {
+        case .halo:
+            pulse(Circle().fill(color.opacity(theme.opacity.halo)).frame(width: size, height: size))
+        case .ring:
+            pulse(Circle().strokeBorder(color, lineWidth: theme.metrics.dotRingWidth).frame(width: size, height: size))
+        case .solid, .hollow:
+            EmptyView()
+        }
+    }
+
+    /// Breathes between 1× and `motion.pulseScale`. `phaseAnimator` starts at 1×, so static renders
+    /// (snapshots) are deterministic, and switching `shouldPulse` off stops it immediately.
+    @ViewBuilder private func pulse(_ view: some View) -> some View {
+        if shouldPulse(pulsing: pulsing, status: status, reduceMotion: theme.reduceMotion) {
+            view.phaseAnimator([1, theme.motion.pulseScale]) { content, scale in
+                content.scaleEffect(scale)
+            } animation: { _ in
+                .easeInOut(duration: theme.motion.pulseDuration)
+            }
+        } else {
+            view
         }
     }
 }
