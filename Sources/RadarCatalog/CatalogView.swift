@@ -15,7 +15,9 @@ enum PreviewAppearance: String, CaseIterable, Identifiable {
 
 struct CatalogView: View {
     @StateObject private var context = StoryContext()
-    @State private var selection: String? = Stories.all.first?.component
+    /// `make catalog COMPONENT=ClassicPopover` opens straight onto a component.
+    @State private var selection: String? = ProcessInfo.processInfo.environment["COMPONENT"].flatMap { $0.isEmpty ? nil : $0 }
+        ?? Stories.all.first?.component
     @State private var search = ""
     @State private var appearance = PreviewAppearance.dark
     @State private var zoom = 1.0
