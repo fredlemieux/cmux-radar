@@ -22,8 +22,14 @@ public func renderHostedBitmap(
         .frame(width: size.width, height: size.height)
         .environment(\.colorScheme, colorScheme))
     host.frame = CGRect(origin: .zero, size: size)
-    host.appearance = NSAppearance(named: colorScheme == .dark ? .darkAqua : .aqua)
+    // A view drawn without a window can miss compositing passes (stray edges around shapes).
+    // Host it in an offscreen borderless window and let it display before capturing.
+    let window = NSWindow(contentRect: host.frame, styleMask: .borderless, backing: .buffered, defer: false)
+    window.isReleasedWhenClosed = false
+    window.appearance = NSAppearance(named: colorScheme == .dark ? .darkAqua : .aqua)
+    window.contentView = host
     host.layoutSubtreeIfNeeded()
+    window.displayIfNeeded()
     guard let rep = NSBitmapImageRep(
         bitmapDataPlanes: nil,
         pixelsWide: Int(size.width * scale),
