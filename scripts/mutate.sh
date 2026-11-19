@@ -49,7 +49,8 @@ swift package --scratch-path .build-mutate resolve >/dev/null
 rm -rf -- "$mutated_copy"
 
 args=(run --skip-coverage --format plain)
-for file in "${files[@]}"; do args+=(--files-to-mutate "$file"); done
+# `${files[@]+...}` keeps bash 3.2 (stock macOS) happy with `set -u` when the array is empty.
+for file in ${files[@]+"${files[@]}"}; do args+=(--files-to-mutate "$file"); done
 
 report="$(mktemp)"
 muter "${args[@]}" | tee "$report" | grep -E 'mutant (killed|survived)|Mutation Score of' || true
