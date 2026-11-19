@@ -86,10 +86,11 @@ enum PendingDecision {
 
 In code (`Sources/RadarCore`): adapters decode cmux frames into `RadarEvent`s, and `reduce` applies them. Edge rules the table leaves open, because events can be late, replayed (bootstrap, resume gaps) or interleaved by parallel tools:
 
-- **Stale events.** An event older than a session's last activity never changes it. A replayed "Waiting" notification or a late Stop can't flip a newer turn to `waiting`, which would let Radar type mid-turn.
-- **Context.** Later events fill in context the session lacked, such as a surface that was `null`. They never blank out known context.
+- **Stale events.** Order comes from the stream's `seq`, never the clock. Hooks, Feed and notifications stamp their times at different moments, and one source's clock can be skewed. An event from earlier in the stream than the last one applied to a session never changes it. So a replayed "Waiting" notification or a late Stop can't flip a newer turn to `waiting`, which would let Radar type mid-turn. Bootstrap snapshots carry the stream position they were read at.
+- **Context.** Later events fill in context the session lacked, such as a surface that was `null`. They never blank out known context, and never move a session to a different surface or workspace: typing into the wrong tab is worse than not typing.
 - **Decisions.**
   - Resolution is keyed by `request_id` alone and closes only the decision holding that id.
+  - A bootstrap `feed.list` closes any open decision Feed no longer holds (it was resolved during a resume gap).
   - A parallel tool call (`PreToolUse`, Feed `toolUse`) keeps an open decision open, because the agent is still blocked on it.
   - A re-sent copy of the open decision keeps its arrival time, so the Feed timeout isn't restarted.
   - `UserPromptSubmit`, `Stop` and `SessionEnd` drop any open decision, because its turn is over.
@@ -245,6 +246,7 @@ Swift Testing, one behaviour per test, nested `@Suite`s per feature and scenario
 2. Does `feed.list` return the item payload (question text, tool input) if asked, so we can skip reading `workstream.jsonl`?
 3. Can the menu bar app run unsandboxed (needed for the Unix socket and `~/.cmuxterm`)? Mac App Store distribution would then be out; Homebrew + notarised DMG only.
 4. Should Radar also offer itself as a cmux Dock control (`dock.json`) for users who don't want a menu bar icon?
+5. Are Feed `request_id`s unique across sessions? The reducer resolves by request id alone, which assumes they are. If they're per-session counters, resolution must also match the session.
 
 ## Design references
 
