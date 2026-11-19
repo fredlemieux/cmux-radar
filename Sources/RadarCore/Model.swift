@@ -150,12 +150,15 @@ public struct Policy: Equatable, Sendable {
     public var hideEndedAfter: TimeInterval
     /// cmux Feed holds a decision this long before the agent falls back to its terminal prompt.
     public var pendingTimeout: TimeInterval
+    /// Feed replies stop this long before the timeout, so one in flight still arrives in time.
+    public var replyMargin: TimeInterval
 
-    public init(idleAfter: TimeInterval, hideEndedAfter: TimeInterval, pendingTimeout: TimeInterval) {
+    public init(idleAfter: TimeInterval, hideEndedAfter: TimeInterval, pendingTimeout: TimeInterval, replyMargin: TimeInterval = 5) {
         self.idleAfter = idleAfter
         self.hideEndedAfter = hideEndedAfter
         self.pendingTimeout = pendingTimeout
+        self.replyMargin = replyMargin
     }
 
-    public static let standard = Policy(idleAfter: 2 * 60 * 60, hideEndedAfter: 10 * 60, pendingTimeout: 120)
+    public static let standard = Policy(idleAfter: 2 * 60 * 60, hideEndedAfter: 10 * 60, pendingTimeout: 120, replyMargin: 5)
 }
