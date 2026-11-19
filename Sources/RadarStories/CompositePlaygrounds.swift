@@ -4,7 +4,12 @@ internal import SwiftUI
 nonisolated extension Playgrounds {
     static let composites: [Playground] = [
         Playground("SessionCard") { context, scheme, zoom in SessionCardPlayground(context: context, scheme: scheme, zoom: zoom) },
-        Playground("ClassicPopover") { context, scheme, zoom in PopoverPlayground(context: context, scheme: scheme, zoom: zoom) },
+        Playground("ClassicPopover") { context, scheme, zoom in
+            PopoverPlayground(context: context, scheme: scheme, zoom: zoom, skin: .classic)
+        },
+        Playground("RadarPopover") { context, scheme, zoom in
+            PopoverPlayground(context: context, scheme: scheme, zoom: zoom, skin: .radar)
+        },
     ]
 }
 
@@ -65,6 +70,11 @@ private struct SessionCardPlayground: View {
 
 /// The whole popover, alive: answering a card changes it, as the real app will.
 private struct PopoverPlayground: View {
+    enum Skin {
+        case classic
+        case radar
+    }
+
     enum Scenario: String, CaseIterable, Identifiable {
         case typical = "Typical day"
         case everythingWaiting = "Everything waiting"
@@ -88,20 +98,26 @@ private struct PopoverPlayground: View {
     let context: StoryContext
     let scheme: ColorScheme
     let zoom: Double
+    let skin: Skin
     @State private var scenario = Scenario.typical
     @State private var sessions = SampleSessions.typical
     @State private var drafts: [String: String] = [:]
 
     var body: some View {
-        PlaygroundLayout(scheme: scheme, zoom: zoom, previewSize: CGSize(width: 468, height: 780)) {
-            ClassicPopover(
-                sessions: sessions,
-                drafts: $drafts,
-                actions: liveActions,
-                onSearch: context.action("search"),
-                onSettings: context.action("settings"),
-                onOpenCmux: context.action("open cmux"),
-            )
+        PlaygroundLayout(scheme: scheme, zoom: zoom, previewSize: CGSize(width: 492, height: 800)) {
+            switch skin {
+            case .classic:
+                ClassicPopover(
+                    sessions: sessions,
+                    drafts: $drafts,
+                    actions: liveActions,
+                    onSearch: context.action("search"),
+                    onSettings: context.action("settings"),
+                    onOpenCmux: context.action("open cmux"),
+                )
+            case .radar:
+                RadarPopover(sessions: sessions, drafts: $drafts, actions: liveActions, onOpenCmux: context.action("open cmux"))
+            }
         } controls: {
             Picker("Scenario", selection: $scenario) {
                 ForEach(Scenario.allCases) { Text($0.rawValue).tag($0) }

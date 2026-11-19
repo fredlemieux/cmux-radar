@@ -5,7 +5,7 @@ internal import SwiftUI
 nonisolated extension Stories {
     /// docs/design/components.md §4, Atoms.
     static let atoms: [Story] = statusDot + countBadge + keyHint + iconButton + replyChip
-        + actionButton + commandBlock + progressBar + sectionLabel
+        + actionButton + commandBlock + progressBar + sectionLabel + radarAtoms
 
     private static let small = CGSize(width: 120, height: 56)
     private static let medium = CGSize(width: 260, height: 64)
