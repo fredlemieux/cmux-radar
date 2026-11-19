@@ -11,8 +11,9 @@ public enum RadarEvent: Equatable, Sendable {
     case toolStarted(SessionContext, time: Date)
     /// `feed.item.received` of kind `permissionRequest`, `question` or `exitPlan`.
     case decisionRequested(SessionContext, PendingDecision, time: Date)
-    /// `feed.item.resolved` / `feed.item.completed` for `requestID`.
-    case decisionResolved(SessionID, requestID: String, time: Date)
+    /// `feed.item.resolved` / `feed.item.completed`. Feed keys these by request id, so the reducer
+    /// finds the session holding it.
+    case decisionResolved(requestID: String, time: Date)
     /// `agent.hook.Stop` with phase `completed`: the agent finished its turn.
     case stopped(SessionContext, time: Date)
     /// A cmux "Waiting" notification for a surface: fallback when hooks are missing.

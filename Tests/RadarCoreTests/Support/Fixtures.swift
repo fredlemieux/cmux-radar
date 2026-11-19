@@ -43,9 +43,9 @@ let anySession = Gen.element(of: SessionState.allCases)
     .compactMap(\.self)
     .map { state in
         switch state {
-        case .needsPermission: session("s", state, pending: permission, pendingSince: epoch)
-        case .needsAnswer: session("s", state, pending: question, pendingSince: epoch)
-        case .needsPlanApproval: session("s", state, pending: plan, pendingSince: epoch)
-        default: session("s", state)
+        case .needsPermission: session("claude-api", state, pending: permission, pendingSince: epoch)
+        case .needsAnswer: session("claude-api", state, pending: question, pendingSince: epoch)
+        case .needsPlanApproval: session("claude-api", state, pending: plan, pendingSince: epoch)
+        default: session("claude-api", state)
         }
     }

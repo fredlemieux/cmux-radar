@@ -1,4 +1,4 @@
-// MUTATION-VERIFIED: killed 10/10 mutants on 2026-11-19 (Reducer.swift, with ReducerTests)
+// MUTATION-VERIFIED: see ReducerTests.swift (same subject, Reducer.swift; counted once there)
 import Foundation
 @testable import RadarCore
 import Testing
@@ -81,9 +81,67 @@ enum ReducerDetailTests {
         }
 
         @Test func `uses the given policy`() {
-            let quick = Policy(idleAfter: 10, hideEndedAfter: 10, pendingTimeout: 10)
+            let quick = Policy(idleAfter: 10, hideEndedAfter: 10, pendingTimeout: 10, replyMargin: 0)
             let next = reduce(radar(session("claude-api", .waiting)), .tick(at(11)), policy: quick)
             #expect(next.sessions[api]?.state == .idle)
+        }
+    }
+
+    struct WhenAWaitingNotificationArrives {
+        @Test func `a working session on that surface waits`() {
+            let next = reduce(radar(session("claude-api", .working)), .waitingNotification(surfaceID: "surface-1", time: at(5)))
+            #expect(next.sessions[api]?.state == .waiting)
+        }
+
+        @Test func `records the event time`() {
+            let next = reduce(radar(session("claude-api", .working)), .waitingNotification(surfaceID: "surface-1", time: at(5)))
+            #expect(next.sessions[api]?.updatedAt == at(5))
+        }
+
+        @Test func `a session on another surface is untouched`() {
+            let start = radar(session("claude-api", .working, surface: "surface-2"))
+            #expect(reduce(start, .waitingNotification(surfaceID: "surface-1", time: at(5))) == start)
+        }
+
+        @Test func `a replayed notification does not undo a newer turn`() {
+            let start = radar(session("claude-api", .working, updatedAt: at(60)))
+            #expect(reduce(start, .waitingNotification(surfaceID: "surface-1", time: at(5))) == start)
+        }
+
+        @Test func `an open decision is not overridden`() {
+            let start = radar(session("claude-api", .needsPermission, pending: permission, pendingSince: epoch))
+            #expect(reduce(start, .waitingNotification(surfaceID: "surface-1", time: at(5))) == start)
+        }
+    }
+
+    struct WhenTheSessionEnds {
+        @Test func `marks it ended`() {
+            let next = reduce(radar(session("claude-api", .waiting)), .sessionEnded(api, time: at(5)))
+            #expect(next.sessions[api]?.state == .ended)
+        }
+
+        @Test func `drops any decision`() {
+            let start = radar(session("claude-api", .needsPlanApproval, pending: plan, pendingSince: epoch))
+            #expect(reduce(start, .sessionEnded(api, time: at(5))).sessions[api]?.pending == nil)
+        }
+
+        @Test func `drops when the decision arrived`() {
+            let start = radar(session("claude-api", .needsPlanApproval, pending: plan, pendingSince: epoch))
+            #expect(reduce(start, .sessionEnded(api, time: at(5))).sessions[api]?.pendingSince == nil)
+        }
+
+        @Test func `records the event time`() {
+            let next = reduce(radar(session("claude-api", .waiting)), .sessionEnded(api, time: at(5)))
+            #expect(next.sessions[api]?.updatedAt == at(5))
+        }
+
+        @Test func `ignores an unseen session`() {
+            #expect(reduce(RadarState(), .sessionEnded(api, time: epoch)).sessions.isEmpty)
+        }
+
+        @Test func `ignores an end older than the last activity`() {
+            let start = radar(session("claude-api", .working, updatedAt: at(60)))
+            #expect(reduce(start, .sessionEnded(api, time: at(5))) == start)
         }
     }
 }
