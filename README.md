@@ -94,6 +94,19 @@ Works with full Xcode or just the Command Line Tools (`xcode-select --install`);
 | `Sources/RadarSnapshot` | Snapshot testing without XCTest ([ADR 0002](docs/adr/0002-in-repo-snapshots-and-catalog.md)). |
 | `Tests/*` | Swift Testing suites; snapshot references in `__Snapshots__/`. |
 
+### Component catalog
+
+`make catalog` opens **Radar Catalog**, the project's Storybook:
+
+| Area | What it does |
+|---|---|
+| Sidebar | Components grouped as atoms → molecules → organisms → templates, with story counts and search |
+| Playground | Live controls (text, toggles, pickers, sliders) for the component's inputs |
+| Stories | Every named state, rendered live and clickable; Dark / Light / Side by side; 1×–2× zoom |
+| Actions | Every tap or submit from any story, with the story it came from |
+
+Stories live in `Sources/RadarStories`. Adding one gives you a catalog entry **and** a snapshot test in both appearances: run `make test` once to record, review the PNG, run again.
+
 ### Quality gates
 
 | Gate | How |
