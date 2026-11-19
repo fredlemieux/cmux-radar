@@ -56,7 +56,7 @@ enum PixelDiffTests {
         let black = solid(width: 2, height: 2, rgba: [0, 0, 0, 255])
         let nearBlack = solid(width: 2, height: 2, rgba: [5, 0, 0, 255])
 
-        @Test func `different sizes are A size mismatch`() throws {
+        @Test func `different sizes are a size mismatch`() throws {
             let small = try #require(solid(width: 1, height: 1, rgba: [0, 0, 0, 255]))
             #expect(try pixelDiff(#require(black), small, tolerance: 0) == .sizeMismatch)
         }

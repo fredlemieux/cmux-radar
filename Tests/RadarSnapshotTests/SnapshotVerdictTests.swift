@@ -10,7 +10,7 @@ struct JudgeSnapshotTests {
     struct WhenRecording {
         let parent = JudgeSnapshotTests()
 
-        @Test func `forced recording wins over A matching reference`() throws {
+        @Test func `forced recording wins over a matching reference`() throws {
             let image = try #require(parent.base)
             let verdict = judgeSnapshot(reference: image, actual: image, record: true, precision: 1, tolerance: 0)
             #expect(verdict == .recorded(.recordingForced))
