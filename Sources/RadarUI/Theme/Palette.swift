@@ -65,7 +65,7 @@ public nonisolated extension Palette {
         borderStrong: ColorToken(dark: RGBA(hex: 0xFFFFFF, alpha: 0.14), light: RGBA(hex: 0x000000, alpha: 0.14)),
         textPrimary: ColorToken(dark: RGBA(hex: 0xF2F2F4), light: RGBA(hex: 0x111114)),
         textSecondary: ColorToken(dark: RGBA(hex: 0xC9C9D1), light: RGBA(hex: 0x3C3C43)),
-        textTertiary: ColorToken(dark: RGBA(hex: 0x9A9AA5), light: RGBA(hex: 0x6B6B74)),
+        textTertiary: ColorToken(dark: RGBA(hex: 0x9A9AA5), light: RGBA(hex: 0x65656D)),
         statusWaiting: ColorToken(dark: RGBA(hex: 0xF5A524), light: RGBA(hex: 0x9A6200)),
         statusPermission: ColorToken(dark: RGBA(hex: 0xFF7A59), light: RGBA(hex: 0xC8431F)),
         statusWorking: ColorToken(dark: RGBA(hex: 0x5B9DFF), light: RGBA(hex: 0x2F6FE0)),
