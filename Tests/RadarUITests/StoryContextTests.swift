@@ -65,4 +65,17 @@ struct StoryContextTests {
         tap()
         #expect(silent.log.isEmpty)
     }
+
+    @Test func `keeps a root alive that only its children reference`() {
+        weak var probe: StoryContext?
+        let child: StoryContext
+        do {
+            let root = StoryContext()
+            probe = root
+            child = root.scoped(to: "atoms/ReplyChip/Default")
+        }
+        withExtendedLifetime(child) {
+            #expect(probe != nil)
+        }
+    }
 }
