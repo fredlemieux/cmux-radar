@@ -1,0 +1,14 @@
+# SwiftFormat — formatting only; SwiftLint owns correctness.
+--swiftversion 6.2
+--maxwidth 140
+--indent 4
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+--closingparen balanced
+--commas always
+--self remove
+--importgrouping alpha
+--stripunusedargs closure-only
+--header ignore
+--exclude .build

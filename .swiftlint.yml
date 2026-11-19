@@ -1,0 +1,86 @@
+# SwiftLint — strict. Run with `--strict` so warnings fail. See docs/standards.md.
+included: [Sources, Tests, Package.swift]
+excluded: [.build]
+
+opt_in_rules:
+  # Escape hatches (docs/standards.md §1): force unwrap/cast/try are errors.
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - fatal_error_message
+  - discouraged_optional_boolean
+  - discouraged_object_literal
+  # Correctness
+  - array_init
+  - contains_over_filter_count
+  - contains_over_first_not_nil
+  - empty_count
+  - empty_string
+  - first_where
+  - last_where
+  - flatmap_over_map_reduce
+  - identical_operands
+  - legacy_multiple
+  - reduce_into
+  - toggle_bool
+  - unowned_variable_capture
+  - unused_parameter
+  - strict_fileprivate
+  - private_swiftui_state
+  - accessibility_label_for_image
+  - accessibility_trait_for_button
+  # Style that helps review
+  - closure_spacing
+  - explicit_init
+  - modifier_order
+  - multiline_arguments
+  - operator_usage_whitespace
+  - prefer_self_type_over_type_of_self
+  - redundant_type_annotation
+  - sorted_imports
+  - vertical_whitespace_closing_braces
+  - yoda_condition
+
+disabled_rules:
+  - todo # Tracked in issues instead; TODO comments are allowed while a stack is in flight.
+  - trailing_comma # SwiftFormat owns commas.
+  - opening_brace # SwiftFormat owns brace placement.
+
+force_cast: error
+force_try: error
+force_unwrapping: error
+implicitly_unwrapped_optional: error
+
+line_length:
+  warning: 140
+  ignores_comments: true
+  ignores_urls: true
+function_body_length: { warning: 40, error: 60 }
+type_body_length: { warning: 200, error: 300 }
+file_length: { warning: 300, error: 400 }
+cyclomatic_complexity: { warning: 8, error: 12 }
+nesting: { type_level: 3 }
+identifier_name:
+  excluded: [id, x, y, lhs, rhs]
+
+custom_rules:
+  no_swiftlint_disable:
+    name: "No lint suppression"
+    regex: 'swiftlint:disable'
+    message: "Fix the code instead. Suppressions need repo-owner sign-off (docs/standards.md §1)."
+    severity: error
+  no_committed_fixed_seed:
+    name: "No committed fixed seed"
+    regex: '\.fixedSeed\('
+    message: "fixedSeed is for local reproduction only (docs/adr/0003)."
+    severity: error
+  no_disabled_tests:
+    name: "No disabled tests"
+    regex: '\.disabled\('
+    message: "No skipped tests (docs/standards.md §3). Delete or fix it."
+    severity: error
+  no_print_in_sources:
+    name: "No print in library code"
+    regex: '^\s*print\('
+    included: 'Sources/Radar(Core|UI|Snapshot)/'
+    message: "Libraries don't print. Return values or log via the app layer."
+    severity: error
