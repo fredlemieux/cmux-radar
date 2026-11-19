@@ -1,4 +1,4 @@
-// MUTATION-VERIFIED: killed 20/20 mutants on 2026-11-19 (SuggestedReplies.swift)
+// MUTATION-VERIFIED: killed 22/22 mutants on 2026-11-19 (SuggestedReplies.swift)
 import PropertyBased
 @testable import RadarCore
 import Testing
