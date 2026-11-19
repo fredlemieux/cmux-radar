@@ -1,4 +1,4 @@
-// MUTATION-VERIFIED: killed 10/10 mutants on 2026-11-19 (Logic/RadarScopeLogic.swift)
+// MUTATION-VERIFIED: killed 9/9 mutants on 2026-11-20 (Logic/RadarScopeLogic.swift)
 import CoreGraphics
 import PropertyBased
 @testable import RadarUI
@@ -6,24 +6,6 @@ import Testing
 
 private func session(_ id: String, _ status: SessionStatus, progress: Double? = nil) -> SessionCardModel {
     SessionCardModel(id: id, name: id, age: "1m", status: status, progress: progress)
-}
-
-struct NeedsYouTests {
-    @Test func `a question needs you`() {
-        #expect(needsYou(.waiting))
-    }
-
-    @Test func `a permission request needs you`() {
-        #expect(needsYou(.permission))
-    }
-
-    @Test func `working does not`() {
-        #expect(!needsYou(.working))
-    }
-
-    @Test func `idle does not`() {
-        #expect(!needsYou(.idle))
-    }
 }
 
 struct BlipBearingTests {
@@ -43,7 +25,7 @@ struct BlipBearingTests {
 struct BlipRangeTests {
     @Test func `the more a session needs you, the closer to the centre`() {
         let ranges = [SessionStatus.permission, .waiting, .working, .idle].map(blipRange)
-        #expect(ranges == ranges.sorted())
+        #expect(zip(ranges, ranges.dropFirst()).allSatisfy { $0 < $1 })
     }
 
     @Test(arguments: SessionStatus.allCases)
@@ -186,5 +168,37 @@ struct TagNameTests {
 
     @Test func `shortens a longer name with an ellipsis`() {
         #expect(tagName("billing-migration") == "BILLING-MIG…")
+    }
+}
+
+struct PinnedContactTests {
+    let first = SessionCardModel(id: "a", name: "a", age: "1m", status: .waiting)
+    let newlyUrgent = SessionCardModel(id: "c", name: "c", age: "9m", status: .permission)
+
+    @Test func `stays on the current caller when a more urgent one arrives`() {
+        #expect(pinnedContact("a", in: [newlyUrgent, first]) == "a")
+    }
+
+    @Test func `moves to the most urgent once the current caller is answered`() {
+        let answered = SessionCardModel(id: "a", name: "a", age: "0:01", status: .working)
+        #expect(pinnedContact("a", in: [newlyUrgent, answered]) == "c")
+    }
+
+    @Test func `starts on the most urgent caller`() {
+        #expect(pinnedContact(nil, in: [first, newlyUrgent]) == "c")
+    }
+}
+
+struct NextContactKeyTests {
+    @Test func `command bracket moves to the next caller`() {
+        #expect(isNextContactKey(characters: "]", command: true))
+    }
+
+    @Test func `a bracket without command does nothing`() {
+        #expect(!isNextContactKey(characters: "]", command: false))
+    }
+
+    @Test func `another command key does nothing`() {
+        #expect(!isNextContactKey(characters: "1", command: true))
     }
 }

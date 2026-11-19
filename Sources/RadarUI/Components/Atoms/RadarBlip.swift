@@ -21,7 +21,7 @@ public struct RadarBlip: View {
                 tag
             }
             glyph
-                .shadow(color: color, radius: needsYou(session.status) ? 6 : 0)
+                .shadow(color: color, radius: session.status.needsAttention ? 6 : 0)
                 .phaseAnimator(blinks ? [1.0, 0.25] : [1.0]) { glyph, opacity in glyph.opacity(opacity) } animation: { _ in
                     .easeInOut(duration: theme.motion.pulseDuration / 2)
                 }
@@ -36,15 +36,15 @@ public struct RadarBlip: View {
 
     private var tag: some View {
         Text(blipTag(for: session))
-            .font(theme.type.caption.weight(needsYou(session.status) ? .bold : .regular))
-            .foregroundStyle(needsYou(session.status) ? color : theme.color(\.textTertiary))
+            .font(theme.type.caption.weight(session.status.needsAttention ? .bold : .regular))
+            .foregroundStyle(session.status.needsAttention ? color : theme.color(\.textTertiary))
             .lineLimit(1)
             .padding(.horizontal, theme.metrics.space2)
             .background(theme.color(\.surfacePopover))
     }
 
     private var blinks: Bool {
-        needsYou(session.status) && !theme.reduceMotion
+        session.status.needsAttention && !theme.reduceMotion
     }
 
     private var color: Color {

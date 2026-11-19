@@ -1,11 +1,6 @@
 internal import CoreGraphics
 internal import Foundation
 
-/// Sessions that need the user: a question or a permission request.
-nonisolated func needsYou(_ status: SessionStatus) -> Bool {
-    status == .waiting || status == .permission
-}
-
 /// Where on the scope a session's blip sits, in degrees clockwise from north. Stable for a
 /// session id across launches (FNV-1a, not Swift's per-process `hashValue`), so blips don't jump.
 nonisolated func blipBearing(for id: String) -> Double {
@@ -79,6 +74,18 @@ public nonisolated func contact(selected: String?, in sessions: [SessionCardMode
     return calling.first
 }
 
+/// The caller the panel stays on as sessions change: the current one while it still needs you,
+/// else the most urgent. Pinning it means a newly urgent session never swaps in under a reply
+/// being typed, and a caller that was answered never jumps back in later.
+nonisolated func pinnedContact(_ current: String?, in sessions: [SessionCardModel]) -> String? {
+    contact(selected: current, in: sessions)?.id
+}
+
+/// ⌘] moves to the next caller. Tab stays with the system, so every control remains reachable.
+nonisolated func isNextContactKey(characters: String, command: Bool) -> Bool {
+    command && characters == "]"
+}
+
 /// The next session that needs you after `current`, wrapping round (⇥ in the Radar skin).
 nonisolated func nextContact(after current: String?, in sessions: [SessionCardModel]) -> String? {
     let ids = contacts(in: sessions).map(\.id)
@@ -90,5 +97,5 @@ nonisolated func nextContact(after current: String?, in sessions: [SessionCardMo
 
 /// Sessions that need you, most urgent first.
 nonisolated func contacts(in sessions: [SessionCardModel]) -> [SessionCardModel] {
-    sortedByUrgency(sessions).filter { needsYou($0.status) }
+    sortedByUrgency(sessions).filter(\.status.needsAttention)
 }
