@@ -100,6 +100,10 @@ extension SuggestedRepliesTests {
             #expect(suggestedReplies(from: "Disk:\n1.5 GB free\n2.0 is required").isEmpty)
         }
 
+        @Test func `treats a numbered sublist under the last item as detail`() {
+            #expect(suggestedReplies(from: "1. Foo\n2. Bar\n   1. x\n   2. y").map(\.label) == ["Foo", "Bar"])
+        }
+
         @Test func `treats a numbered sublist as detail`() {
             #expect(suggestedReplies(from: "1. Foo\n   1. a\n   2. b\n2. Bar").map(\.label) == ["Foo", "Bar"])
         }
@@ -151,32 +155,40 @@ struct IsASCIIDigitTests {
 }
 
 struct ListItemRuleTests {
-    @Test func `the first item sets the list level`() {
-        #expect(isTopLevel(3, nil))
+    @Test func `a blank line is in the list region`() {
+        #expect(isInListRegion(""))
     }
 
-    @Test func `an item at the list level is top level`() {
-        #expect(isTopLevel(0, 0))
+    @Test func `an indented line is in the list region`() {
+        #expect(isInListRegion("   - safer"))
     }
 
-    @Test func `a deeper item is not top level`() {
-        #expect(!isTopLevel(3, 0))
+    @Test func `an unindented item is in the list region`() {
+        #expect(isInListRegion("1. Ship"))
     }
 
-    @Test func `a deeper line is detail`() {
-        #expect(isDetail(3, under: 0))
+    @Test func `unindented prose ends the list region`() {
+        #expect(!isInListRegion("Then:"))
     }
 
-    @Test func `a line at the list level is not detail`() {
-        #expect(!isDetail(0, under: 0))
+    @Test func `the list level is the shallowest item indent`() {
+        #expect(listLevel(["   2. y", "   1. x", "2. Bar", "   - note"]) == 0)
     }
 
-    @Test func `before any item, any indent is detail`() {
-        #expect(isDetail(1, under: nil))
+    @Test func `a region without items has no level`() {
+        #expect(listLevel(["   - note", ""]) == nil)
     }
 
-    @Test func `an unindented line before any item is not detail`() {
-        #expect(!isDetail(0, under: nil))
+    @Test func `a line at the level is at the level`() {
+        #expect(isAtLevel("1. a", 0))
+    }
+
+    @Test func `a deeper line is not at the level`() {
+        #expect(!isAtLevel("   1. a", 0))
+    }
+
+    @Test func `a blank line is never at the level`() {
+        #expect(!isAtLevel("", 0))
     }
 
     @Test func `the bottom item always starts the list`() {

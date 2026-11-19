@@ -21,7 +21,7 @@ public func reduce(_ state: RadarState, _ event: RadarEvent, policy: Policy = .s
     case let .decisionResolved(requestID, stamp):
         next.sessions = next.sessions.mapValues { resolveDecision($0, .request(requestID), at: stamp) }
     case let .decisionsListed(open, stamp):
-        next.sessions = next.sessions.mapValues { resolveDecision($0, .allExcept(open), at: stamp) }
+        next.sessions = next.sessions.mapValues { isStale(stamp, for: $0) ? $0 : resolveDecision($0, .allExcept(open), at: stamp) }
     case let .waitingNotification(surfaceID, stamp):
         next.sessions = next.sessions.mapValues { markWaiting($0, onSurface: surfaceID, at: stamp) }
     case let .sessionEnded(id, stamp):
@@ -81,7 +81,7 @@ private func update(
     guard !isStale(stamp, for: existing), existing.state != .ended || rule == .revives else {
         return existing
     }
-    return change(merged(existing, with: context))
+    return change(merged(existing, with: context, resumed: existing.state == .ended))
 }
 
 /// A session Radar hasn't seen: created unless the rule only touches known sessions.
@@ -94,6 +94,12 @@ func isStale(_ stamp: Stamp, for session: Session) -> Bool {
     stamp.seq < session.lastSeq
 }
 
+/// Strictly later in the stream than the last event applied. A bootstrap snapshot shares the
+/// position it was read at, so it never counts as newer than the live event at that position.
+func isNewer(_ stamp: Stamp, than session: Session) -> Bool {
+    stamp.seq > session.lastSeq
+}
+
 /// Records an applied event: its stream position and when it happened.
 func touched(_ session: Session, at stamp: Stamp) -> Session {
     var updated = session
@@ -103,11 +109,12 @@ func touched(_ session: Session, at stamp: Stamp) -> Session {
 }
 
 /// Fills context the session lacked (cmux sometimes sends a null surface). A known surface or
-/// workspace is never replaced: typing into the wrong tab is worse than not typing.
-func merged(_ session: Session, with context: SessionContext) -> Session {
+/// workspace is never replaced by a live session's events: typing into the wrong tab is worse than
+/// not typing. A resumed session (a prompt after it ended) takes the surface it resumed in.
+func merged(_ session: Session, with context: SessionContext, resumed: Bool) -> Session {
     var updated = session
-    updated.surfaceID = session.surfaceID ?? context.surfaceID
-    updated.workspaceID = session.workspaceID ?? context.workspaceID
+    updated.surfaceID = resumed ? context.surfaceID : session.surfaceID ?? context.surfaceID
+    updated.workspaceID = resumed ? context.workspaceID : session.workspaceID ?? context.workspaceID
     updated.cwd = context.cwd.isEmpty ? session.cwd : context.cwd
     return updated
 }
@@ -184,7 +191,7 @@ private func finishTurn(_ session: Session, at stamp: Stamp) -> Session {
 /// Only a working session on that surface flips, and only for a fresh notification: it never
 /// overrides a decision, and a replayed one never undoes a newer turn.
 private func markWaiting(_ session: Session, onSurface surfaceID: String, at stamp: Stamp) -> Session {
-    guard session.surfaceID == surfaceID, session.state == .working, !isStale(stamp, for: session) else {
+    guard session.surfaceID == surfaceID, session.state == .working, isNewer(stamp, than: session) else {
         return session
     }
     var updated = session

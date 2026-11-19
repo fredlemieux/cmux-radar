@@ -1,4 +1,4 @@
-// MUTATION-VERIFIED: killed 21/21 mutants on 2026-11-19 (Reducer.swift, across this file, ReducerDetailTests and ReducerPropertyTests)
+// MUTATION-VERIFIED: killed 26/26 mutants on 2026-11-19 (Reducer.swift, across this file, ReducerDetailTests, ReducerOrderingTests and ReducerPropertyTests)
 import Foundation
 import PropertyBased
 @testable import RadarCore

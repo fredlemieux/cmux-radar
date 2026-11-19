@@ -28,6 +28,43 @@ enum ReducerOrderingTests {
         }
     }
 
+    struct WhenASnapshotSharesThePosition {
+        @Test func `a waiting notification at the same position does not undo the turn`() {
+            let start = radar(session("claude-api", .working, updatedAt: at(60)))
+            #expect(reduce(start, .waitingNotification(surfaceID: "surface-1", stamp: stamp(60))) == start)
+        }
+
+        @Test func `a feed list from before the decision does not close it`() {
+            let open = radar(session("claude-api", .needsPermission, pending: permission, pendingSince: epoch, updatedAt: at(60)))
+            #expect(reduce(open, .decisionsListed(requestIDs: [], stamp: stamp(50))) == open)
+        }
+    }
+
+    struct WhenAnEndedSessionResumesInAnotherTab {
+        let ended = radar(session("claude-api", .ended))
+
+        @Test func `takes the surface it resumed in`() {
+            let next = reduce(ended, .promptSubmitted(context("claude-api", surface: "surface-7"), stamp: stamp(5)))
+            #expect(next.sessions[api]?.surfaceID == "surface-7")
+        }
+
+        @Test func `takes the workspace it resumed in`() {
+            let moved = SessionContext(id: api, cwd: "/Users/dev/code/api", workspaceID: "workspace-9", surfaceID: "surface-7")
+            #expect(reduce(ended, .promptSubmitted(moved, stamp: stamp(5))).sessions[api]?.workspaceID == "workspace-9")
+        }
+
+        @Test func `a live session keeps its workspace`() {
+            let moved = SessionContext(id: api, cwd: "/Users/dev/code/api", workspaceID: "workspace-9", surfaceID: "surface-1")
+            let live = radar(session("claude-api", .waiting))
+            #expect(reduce(live, .promptSubmitted(moved, stamp: stamp(5))).sessions[api]?.workspaceID == "workspace-1")
+        }
+
+        @Test func `drops the old surface when the resume has none`() {
+            let next = reduce(ended, .promptSubmitted(context("claude-api", surface: nil), stamp: stamp(5)))
+            #expect(next.sessions[api]?.surfaceID == nil)
+        }
+    }
+
     struct WhenFeedIsListed {
         let open = radar(session("claude-api", .needsPermission, pending: permission, pendingSince: epoch))
 

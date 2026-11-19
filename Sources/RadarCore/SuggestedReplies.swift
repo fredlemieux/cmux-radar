@@ -26,24 +26,18 @@ public func suggestedReplies(from message: String?) -> [SuggestedReply] {
 
 /// Walks up from the last line, collecting the top-level items of the closing list.
 ///
-/// Top level is the indent of the last item; deeper lines (detail, nested bullets, a numbered
-/// sublist) and blank lines are skipped. It stops at item 1, at an item out of sequence (an
-/// earlier list), or at unindented prose.
+/// The list runs up to the first unindented line that isn't an item. Its top level is the
+/// shallowest item indent in it, so deeper lines (detail, nested bullets, a numbered sublist, even
+/// one under the last item) are skipped. It stops at item 1 or at an item out of sequence (an
+/// earlier list above a blank line).
 func closingList(_ bottomUp: [String]) -> [SuggestedReply] {
+    let region = Array(bottomUp.prefix(while: isInListRegion))
+    let level = listLevel(region)
     var items: [SuggestedReply] = []
-    var level: Int?
-    for line in bottomUp where !isBlank(line) {
-        let indent = indentation(line)
-        guard let item = listItem(line), isTopLevel(indent, level) else {
-            guard isDetail(indent, under: level) else {
-                break
-            }
-            continue
-        }
-        guard continuesUpwards(item, before: items.first) else {
+    for line in region where isAtLevel(line, level) {
+        guard let item = listItem(line), continuesUpwards(item, before: items.first) else {
             break
         }
-        level = indent
         items.insert(item, at: 0)
         if item.number == 1 {
             break
@@ -52,14 +46,24 @@ func closingList(_ bottomUp: [String]) -> [SuggestedReply] {
     return items
 }
 
-/// An item at the list's own indent (or the first item found, which sets it).
-func isTopLevel(_ indent: Int, _ level: Int?) -> Bool {
-    level == nil || indent == level
+/// A list item, a blank line, or an indented line: anything that can sit inside a closing list.
+func isInListRegion(_ line: String) -> Bool {
+    isBlank(line) || indentation(line) > 0 || listItem(line) != nil
 }
 
-/// Indented further than the list's items (or indented at all, before any item is found).
-func isDetail(_ indent: Int, under level: Int?) -> Bool {
-    indent > (level ?? 0)
+/// The shallowest indent of an item in the region: the list's top level.
+func listLevel(_ region: [String]) -> Int? {
+    region.compactMap(itemIndentation).min()
+}
+
+/// A line's indent if it's a list item.
+func itemIndentation(_ line: String) -> Int? {
+    listItem(line).map { _ in indentation(line) }
+}
+
+/// A non-blank line at the list's top level.
+func isAtLevel(_ line: String, _ level: Int?) -> Bool {
+    !isBlank(line) && indentation(line) == level
 }
 
 /// Reading upwards, each item is numbered one less than the item below it.
