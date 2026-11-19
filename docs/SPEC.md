@@ -109,6 +109,39 @@ The parameter names after `request_id` still need confirming against cmux source
 
 When the last agent message ends in a numbered list (`1. …` / `2. …`), offer each item as a chip that sends its number. Otherwise offer nothing; no made-up suggestions.
 
+### 4.1 Summaries via `claude -p` (M4)
+
+No API key. Radar shells out to the `claude` CLI the user already has logged in:
+
+```sh
+claude -p --model haiku \
+  --setting-sources "" \
+  --tools "" \
+  --no-session-persistence \
+  --output-format json \
+  "<prompt + last agent message>"
+```
+
+| Flag | Why |
+|---|---|
+| `--setting-sources ""` | Don't load user/project/local settings, so the user's own hooks don't fire for every summary. |
+| `--tools ""` | Summarising needs no tools; removes any chance of side effects. |
+| `--no-session-persistence` | Don't litter `~/.claude/projects` with one-off sessions. |
+| `--output-format json` | Parse `.result`; log `.total_cost_usd` and `.duration_ms`. |
+| `--model haiku` | Cheap and fast; configurable. |
+
+Not `--bare`: it skips hooks too, but it only accepts `ANTHROPIC_API_KEY` auth (no OAuth or keychain), which defeats the point.
+
+Run it from the app process, not from inside a cmux terminal. That way cmux's wrapper shim (which injects cmux's own hooks) isn't on `PATH`, and the summariser never shows up as a session in Radar.
+
+Measured on Claude Code 2.1.321: ~1 s and ~$0.0006 per summary with Haiku. A test run with these flags produced no cmux events or Feed entries.
+
+Rules:
+- Trigger once per `Stop`, debounced, never while the popover is merely open.
+- Cache by `(session_id, hash(last message))`.
+- Concurrency limit 2; a 20 s timeout; on failure keep the heuristic first-line summary.
+- Respects the user's plan quota; a settings toggle turns it off entirely.
+
 ## 5. Architecture
 
 ```
@@ -149,7 +182,7 @@ Rules: skins receive view models and an `actions` handle only. They can't touch 
 
 - Everything is local. No network calls in v1.
 - cmux marks its event stream as local-sensitive. Radar never forwards it.
-- M4 summaries are opt-in, use the user's own API key, and send only the last agent message, never tool inputs.
+- M4 summaries are opt-in and run through the user's existing `claude` CLI login (see §4.1), so there's no API key to manage. Only the last agent message is sent, never tool inputs.
 
 ## 7. Testing
 
@@ -170,7 +203,7 @@ Swift Testing, one behaviour per test, nested `@Suite`s per feature and scenario
 | M1 | `RadarCore`: socket client, reducer, bootstrap, state reader | Reducer suite green; CLI debug dump prints live sessions |
 | M2 | Menu bar app + Classic skin + actions | Can answer a real permission prompt and send a text reply from the popover |
 | M3 | `⌥Space` inbox + Radar skin + skin switcher | Both skins pass snapshot suite |
-| M4 | Opt-in summaries, settings, launch at login | |
+| M4 | Opt-in summaries via `claude -p` (§4.1), settings, launch at login | Summary appears within ~2 s of `Stop`; summariser never appears as a session |
 | M5 | cmux sidebar extension (CmuxExtensionKit) | |
 | v1.0 | Signed + notarised build, Homebrew cask, repo public | |
 
@@ -182,6 +215,7 @@ Swift Testing, one behaviour per test, nested `@Suite`s per feature and scenario
 | `send_text` racing an agent that just started a turn | Re-check state immediately before sending; disable the reply box while `working`. |
 | `surface_id` is sometimes `null` on hook events | Resolve it from `claude-hook-sessions.json` `activeSessionsBySurface`; otherwise jump only. |
 | Feed's 120 s timeout | Show a countdown on decision cards; after expiry, offer Jump. |
+| `claude` CLI flags change, or `claude` isn't on the app's `PATH` (GUI apps get a minimal `PATH`) | Resolve the binary via a login shell (`zsh -lc 'command -v claude'`) once and cache it; feature-detect flags with `claude --help`; fall back to heuristic summaries. |
 | Socket auth (`CMUX_SOCKET_PASSWORD`) | Read the same sources the cmux CLI does; show a clear settings error. |
 
 ## 10. Open questions
