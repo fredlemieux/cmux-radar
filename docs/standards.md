@@ -55,6 +55,7 @@ This repo follows the software-factory engineering standards. The canonical stan
 ## 5. Supply chain and security
 
 - SwiftPM dependencies pinned with `exact:` versions; `Package.resolved` committed.
+- CI lint tools are exact release binaries verified by SHA-256 (`scripts/install-ci-tools.sh`); Homebrew is for local machines only.
 - GitHub Actions pinned by full commit SHA with the version in a comment. No `pull_request_target`.
 - gitleaks on every PR.
 - The app makes no network calls of its own; see `docs/SPEC.md` §6.

@@ -2,6 +2,8 @@ name: ci
 
 on:
   pull_request:
+  push:
+    branches: [main] # re-verify main after merges and stack collapses
 
 permissions:
   contents: read
@@ -17,13 +19,16 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: swift
+        name: Swift version (cache key)
+        run: echo "version=$(swift --version 2>&1 | sed -nE 's/.*Swift version ([0-9.]+).*/\1/p')" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .build
-          key: spm-${{ runner.os }}-${{ hashFiles('Package.resolved') }}
-          restore-keys: spm-${{ runner.os }}-
-      - name: Install tools
-        run: brew bundle --file=Brewfile && scripts/check-tool-versions.sh
+          key: spm-${{ runner.os }}-${{ steps.swift.outputs.version }}-${{ hashFiles('Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-${{ steps.swift.outputs.version }}-
+      - name: Install pinned tools
+        run: scripts/install-ci-tools.sh "$RUNNER_TEMP/tools"
       - name: Lint
         run: make lint
       - name: Build
@@ -34,8 +39,9 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: snapshot-failures
-          path: Tests/**/__Snapshots__/**/*.failure.png
+          name: snapshots
+          # Failures and any references recorded on this runner (download to commit them).
+          path: Tests/**/__Snapshots__/**/*.png
           if-no-files-found: ignore
 
   mutation:
