@@ -20,14 +20,15 @@ private struct StatusDotPlayground: View {
     let zoom: Double
     @State private var status = SessionStatus.waiting
     @State private var pulsing = true
+    @State private var reduceMotion = false
 
     var body: some View {
         PlaygroundLayout(scheme: scheme, zoom: zoom) {
-            // `.id` restarts the pulse animation when the inputs change.
-            StatusDot(status, pulsing: pulsing).id("\(status)-\(pulsing)")
+            StatusDot(status, pulsing: pulsing).radarTheme(.classic, motion: reduceMotion ? .reduced : .full)
         } controls: {
             StatusPicker(title: "Status", status: $status)
             Toggle("Pulsing", isOn: $pulsing)
+            Toggle("Reduce Motion", isOn: $reduceMotion)
         }
     }
 }
@@ -36,14 +37,14 @@ private struct CountBadgePlayground: View {
     let scheme: ColorScheme
     let zoom: Double
     @State private var count = 2
-    @State private var status = SessionStatus.waiting
+    @State private var permission = false
 
     var body: some View {
         PlaygroundLayout(scheme: scheme, zoom: zoom) {
-            CountBadge(count, status: status)
+            CountBadge(count, attention: permission ? .permission : .waiting)
         } controls: {
             Stepper("Count: \(count)", value: $count, in: -5 ... 250)
-            StatusPicker(title: "Status", status: $status)
+            Toggle("Permission colour", isOn: $permission)
         }
     }
 }
