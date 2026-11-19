@@ -17,8 +17,8 @@ public struct SectionLabel: View {
     public var body: some View {
         Text(sectionLabelText(title: title, count: count))
             .font(theme.type.sectionLabel)
-            .tracking(0.66)
-            .foregroundStyle(status == .idle ? theme.color(\.textTertiary) : theme.status(status))
+            .tracking(theme.type.sectionLabelTracking)
+            .foregroundStyle(sectionLabelUsesStatusColor(status) ? theme.status(status) : theme.color(\.textTertiary))
             .accessibilityAddTraits(.isHeader)
     }
 }

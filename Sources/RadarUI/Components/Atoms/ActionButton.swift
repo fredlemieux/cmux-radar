@@ -25,7 +25,7 @@ public struct ActionButton: View {
     public var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 12.5, weight: style == .primary ? .semibold : .regular))
+                .font(style == .primary ? theme.type.buttonPrimary : theme.type.button)
                 .foregroundStyle(foreground)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity)
@@ -35,7 +35,7 @@ public struct ActionButton: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .opacity(isEnabled ? 1 : 0.45)
+        .opacity(isEnabled ? 1 : theme.opacity.disabled)
     }
 
     private var foreground: Color {

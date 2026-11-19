@@ -19,9 +19,9 @@ public struct ProgressBar: View {
                     .frame(width: proxy.size.width * fraction)
             }
         }
-        .frame(height: 3)
+        .frame(height: theme.metrics.progressHeight)
         .accessibilityElement()
         .accessibilityLabel("Progress")
-        .accessibilityValue("\(Int((fraction * 100).rounded())) percent")
+        .accessibilityValue(progressAccessibilityValue(fraction))
     }
 }

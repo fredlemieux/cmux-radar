@@ -25,13 +25,14 @@ public struct IconButton: View {
     public var body: some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 13, weight: style == .filled ? .bold : .regular))
+                .font(theme.type.icon.weight(style == .filled ? .bold : .regular))
                 .foregroundStyle(foreground)
                 .frame(width: theme.metrics.control, height: theme.metrics.control)
-                .background(RoundedRectangle(cornerRadius: theme.metrics.radiusControl - 1).fill(background))
+                .background(RoundedRectangle(cornerRadius: theme.metrics.radiusIconButton).fill(background))
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .opacity(style == .plain && !isEnabled ? theme.opacity.disabled : 1)
         .accessibilityLabel(label)
         .help(label)
     }

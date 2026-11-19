@@ -18,7 +18,7 @@ public struct CommandBlock: View {
             .truncationMode(.tail)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, theme.metrics.space12)
-            .padding(.vertical, 9)
+            .padding(.vertical, theme.metrics.insetPaddingVertical)
             .background(RoundedRectangle(cornerRadius: theme.metrics.radiusControl).fill(theme.color(\.surfaceInset)))
             .textSelection(.enabled)
     }

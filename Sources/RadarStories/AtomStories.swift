@@ -14,6 +14,9 @@ nonisolated extension Stories {
     private static let statusDot: [Story] = [
         Story(.atoms, "StatusDot", "Waiting", size: small) { _ in StatusDot(.waiting) },
         Story(.atoms, "StatusDot", "Waiting pulsing", size: small) { _ in StatusDot(.waiting, pulsing: true) },
+        Story(.atoms, "StatusDot", "Waiting pulsing, reduced motion", size: small) { _ in
+            StatusDot(.waiting, pulsing: true).radarTheme(.classic, motion: .reduced)
+        },
         Story(.atoms, "StatusDot", "Permission", size: small) { _ in StatusDot(.permission) },
         Story(.atoms, "StatusDot", "Working", size: small) { _ in StatusDot(.working) },
         Story(.atoms, "StatusDot", "Idle", size: small) { _ in StatusDot(.idle) },
@@ -24,7 +27,7 @@ nonisolated extension Stories {
         Story(.atoms, "CountBadge", "Two", size: small) { _ in CountBadge(2) },
         Story(.atoms, "CountBadge", "Twelve", size: small) { _ in CountBadge(12) },
         Story(.atoms, "CountBadge", "Over ninety-nine", size: small) { _ in CountBadge(150) },
-        Story(.atoms, "CountBadge", "Permission", size: small) { _ in CountBadge(1, status: .permission) },
+        Story(.atoms, "CountBadge", "Permission", size: small) { _ in CountBadge(1, attention: .permission) },
     ]
 
     private static let keyHint: [Story] = [
@@ -44,6 +47,9 @@ nonisolated extension Stories {
             label: "Settings",
             action: context.action("settings"),
         ) },
+        Story(.atoms, "IconButton", "Search disabled", size: small) { context in
+            IconButton("magnifyingglass", label: "Search sessions", action: context.action("search")).disabled(true)
+        },
         Story(.atoms, "IconButton", "Send", size: small) { context in IconButton(
             "arrow.right",
             label: "Send reply",
@@ -95,7 +101,7 @@ nonisolated extension Stories {
 
     private static let progressBar: [Story] = [
         Story(.atoms, "ProgressBar", "Empty", size: medium) { _ in ProgressBar(0) },
-        Story(.atoms, "ProgressBar", "Partial", size: medium) { _ in ProgressBar(0.72) },
+        Story(.atoms, "ProgressBar", "Partial", size: medium) { _ in ProgressBar(0.42) },
         Story(.atoms, "ProgressBar", "Full", size: medium) { _ in ProgressBar(1) },
     ]
 

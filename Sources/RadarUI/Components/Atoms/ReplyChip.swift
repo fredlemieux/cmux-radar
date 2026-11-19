@@ -20,7 +20,8 @@ public struct ReplyChip: View {
         Button(action: action) {
             HStack(spacing: theme.metrics.space6) {
                 Text(String(index))
-                    .foregroundStyle(theme.color(\.textTertiary))
+                    // Secondary on the tinted (highlighted) fill keeps the number at WCAG AA.
+                    .foregroundStyle(theme.color(highlighted ? \.textSecondary : \.textTertiary))
                     .monospacedDigit()
                 Text(label)
                     .foregroundStyle(theme.color(\.textPrimary))
@@ -30,8 +31,8 @@ public struct ReplyChip: View {
             .font(theme.type.chip)
             .padding(.horizontal, theme.metrics.space10)
             .frame(height: theme.metrics.control)
-            .frame(maxWidth: 200)
-            .background(Capsule().fill(highlighted ? theme.status(.waiting).opacity(0.14) : theme.color(\.surfaceCard)))
+            .frame(maxWidth: theme.metrics.chipMaxWidth)
+            .background(Capsule().fill(highlighted ? theme.status(.waiting).opacity(theme.opacity.tint) : theme.color(\.surfaceCard)))
             .overlay(Capsule().strokeBorder(highlighted ? theme.status(.waiting) : theme.color(\.borderStrong)))
             .fixedSize(horizontal: true, vertical: false)
             .contentShape(Capsule())
