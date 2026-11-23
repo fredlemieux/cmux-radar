@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>cmux-radar rave flyer direction</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'Space Mono',monospace;color:#0A0A0A}
+a{color:#0A0A0A}a:hover{color:#3A3A3A}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+.wobble{animation:wob 2.4s ease-in-out infinite}
+@keyframes wob{50%{transform:rotate(-8deg) scale(1.04)}}
+</style>
+</head>
+<body>
+<div style="width:460px;height:780px;box-sizing:border-box;background:#1A1A1A;position:relative;overflow:hidden">
+  <div style="height:30px;display:flex;align-items:center;justify-content:flex-end;gap:14px;padding:0 14px;background:rgba(255,255,255,0.07);font-size:12px;color:#D0D0D0">
+    <span style="height:18px;padding:0 7px;background:#D4FF00;color:#0A0A0A;font-family:Anton,sans-serif;font-size:13px;letter-spacing:0.04em;display:flex;align-items:center;transform:rotate(-3deg)">2 NEED YOU</span>
+    <span>15:31</span>
+  </div>
+
+  <div style="position:absolute;top:40px;left:14px;right:14px;bottom:14px;background:#D4FF00;display:flex;flex-direction:column;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#0A0A0A;color:#D4FF00;font-size:10.5px;letter-spacing:0.14em;font-weight:700">
+      <span>RADAR PRESENTS</span><span>CMUX · THU 19 NOV · ALL NIGHT</span>
+    </div>
+
+    <div style="position:relative;padding:14px 16px 0">
+      <span style="font-size:11px;font-weight:700;letter-spacing:0.1em">GENERAL ADMIN ASKS:</span>
+      <h1 style="margin:4px 0 0;font-family:Anton,sans-serif;font-weight:400;font-size:58px;line-height:0.9;letter-spacing:-0.01em;text-transform:uppercase">Build it?<br>Try Muster?<br>Fork it?</h1>
+      <div class="wobble" style="position:absolute;right:14px;top:18px;width:92px;height:92px;border-radius:50%;background:#0A0A0A;color:#D4FF00;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-12deg);text-align:center">
+        <span style="font-family:Anton,sans-serif;font-size:24px;line-height:1">03:12</span>
+        <span style="font-size:9px;font-weight:700;letter-spacing:0.08em">WAITING</span>
+      </div>
+      <p style="margin:10px 0 0;font-size:11.5px;line-height:1.45;max-width:340px">Scanned 10 menu-bar apps. cmux can type into any tab. Your call.</p>
+    </div>
+
+    <div style="margin:12px 16px 0;display:flex;align-items:center;gap:8px;border:3px solid #0A0A0A;background:#FFFFFF;height:42px;padding:0 6px 0 12px">
+      <span style="font-family:Anton,sans-serif;font-size:15px">SHOUT BACK</span>
+      <label for="fl" class="sr">Reply to General Admin</label>
+      <input id="fl" placeholder="type anything…" style="flex:1;min-width:0;background:transparent;border:0;outline:none;color:#0A0A0A;font-size:12.5px">
+      <button aria-label="Send" style="height:30px;padding:0 10px;border:0;background:#0A0A0A;color:#D4FF00;font-family:Anton,sans-serif;font-size:14px;letter-spacing:0.04em">GO ⏎</button>
+    </div>
+
+    <div style="margin:14px 16px 0;border-top:3px solid #0A0A0A;padding-top:8px;display:flex;flex-direction:column;gap:6px">
+      <span style="font-size:10.5px;font-weight:700;letter-spacing:0.14em">TONIGHT'S LINEUP</span>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-family:Anton,sans-serif;font-size:26px;line-height:1">DOCS SITE</span>
+        <span style="font-size:10px;font-weight:700;background:#FF3D7F;color:#0A0A0A;padding:2px 6px;transform:rotate(2deg)">WANTS TO RUN BASH</span>
+        <button style="height:28px;padding:0 10px;border:2px solid #0A0A0A;background:#0A0A0A;color:#D4FF00;font-size:11px;font-weight:700">ALLOW</button>
+        <button style="height:28px;padding:0 10px;border:2px solid #0A0A0A;background:transparent;color:#0A0A0A;font-size:11px;font-weight:700">DENY</button>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;line-height:1.05">
+        <span style="font-family:Anton,sans-serif;font-size:22px">POMOFITNESS</span><span style="font-size:10px;font-weight:700">(LIVE · 72%)</span>
+        <span style="font-size:16px">//</span>
+        <span style="font-family:Anton,sans-serif;font-size:17px;opacity:0.7">VIEW LOCALHOST</span>
+        <span style="font-size:16px">//</span>
+        <span style="font-family:Anton,sans-serif;font-size:17px;opacity:0.7">FINANCE DASH</span>
+        <span style="font-size:16px">//</span>
+        <span style="font-family:Anton,sans-serif;font-size:17px;opacity:0.7">PLANNING</span>
+      </div>
+    </div>
+
+    <div style="margin-top:auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:2px dashed #0A0A0A;height:118px">
+      
+        <button style="border:0;border-right:2px dashed #0A0A0A;background:#0A0A0A;color:#D4FF00;display:flex;align-items:center;justify-content:center;padding:0">
+          <span style="writing-mode:vertical-rl;transform:rotate(180deg);font-family:Anton,sans-serif;font-size:19px;letter-spacing:0.04em">1 · BUILD IT</span>
+        </button>
+      
+        <button style="border:0;border-right:2px dashed #0A0A0A;background:transparent;color:#0A0A0A;display:flex;align-items:center;justify-content:center;padding:0">
+          <span style="writing-mode:vertical-rl;transform:rotate(180deg);font-family:Anton,sans-serif;font-size:19px;letter-spacing:0.04em">2 · MUSTER</span>
+        </button>
+      
+        <button style="border:0;border-right:2px dashed #0A0A0A;background:transparent;color:#0A0A0A;display:flex;align-items:center;justify-content:center;padding:0">
+          <span style="writing-mode:vertical-rl;transform:rotate(180deg);font-family:Anton,sans-serif;font-size:19px;letter-spacing:0.04em">3 · FORK</span>
+        </button>
+      
+        <button style="border:0;border-right:2px dashed #0A0A0A;background:transparent;color:#0A0A0A;display:flex;align-items:center;justify-content:center;padding:0">
+          <span style="writing-mode:vertical-rl;transform:rotate(180deg);font-family:Anton,sans-serif;font-size:19px;letter-spacing:0.04em">GO TO TAB</span>
+        </button>
+      
+    </div>
+  </div>
+</div>
+</body>
+</html>
