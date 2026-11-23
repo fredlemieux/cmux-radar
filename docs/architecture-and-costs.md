@@ -37,22 +37,22 @@ Assumptions: ~8 min of macOS per PR CI run (lint + build + test), ~3 runs per PR
 
 | Period | Repo visibility | CI | Apple | Total |
 |---|---|---|---|---|
-| Launch (now → v1.0) | private | ~360 macOS min/month ≈ $22 → **exceeds the $12 allowance**: ~$10/month with a payment method on file, otherwise CI blocks mid-month | $0 (not needed until signing) | **$0–10/month** |
-| 12 months | public from v1.0 | free | $99/year | **≈ $8/month** |
+| Launch (now → v1.0) | public | free | $0 (not needed until signing) | **$0/month** |
+| 12 months | public | free | $99/year | **≈ $8/month** |
 | 36 months | public | free | $99/year | **≈ $8/month** |
 
-The only growing cost would be CI on a private repo. There is no media storage or audience-driven delivery: releases are a single small DMG served by GitHub Releases at no cost.
+The repo went public before v1.0, so CI never grows into a cost. A private repo would need ~360 macOS min/month ≈ $22, over the $12 allowance. There is no media storage or audience-driven delivery: releases are a single small DMG served by GitHub Releases at no cost.
 
 ## Cost controls already in place
 
-- macOS mutation jobs (PR and nightly) run only when the repo is public; while private, mutation runs locally (`make mutate-changed`).
+- macOS mutation jobs (PR and nightly) skip private repos, so a private fork doesn't burn its allowance; run `make mutate-changed` locally there.
 - CI runs on pull requests only, not on pushes to `main`.
 - `cancel-in-progress` concurrency stops superseded runs.
 - Secret scanning runs on Linux (10× cheaper).
 
 ## Billing alerts
 
-- Add a payment method with a **$10 Actions budget** and an alert at 75%, or make the repo public before the allowance runs out.
+- None needed while the repo is public. If it ever goes private, add a payment method with a **$10 Actions budget** and an alert at 75%.
 
 ## Long-term gotchas
 

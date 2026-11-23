@@ -229,7 +229,7 @@ Swift Testing, one behaviour per test, nested `@Suite`s per feature and scenario
 | M3 | `⌥Space` inbox + Radar skin + skin switcher | Both skins pass snapshot suite |
 | M4 | Opt-in summaries via `claude -p` (§4.1), settings, launch at login | Summary appears within ~2 s of `Stop`; summariser never appears as a session |
 | M5 | cmux sidebar extension (CmuxExtensionKit) | |
-| v1.0 | Signed + notarised build, Homebrew cask, repo public | |
+| v1.0 | Signed + notarised build, Homebrew cask | |
 
 ## 9. Risks
 
@@ -252,4 +252,4 @@ Swift Testing, one behaviour per test, nested `@Suite`s per feature and scenario
 
 ## Design references
 
-Mockups for Classic, Inbox, Sidebar, icon states, and the Radar, Groovebox, Departures and Flyer skins live in a design canvas (private for now; it will be exported to `docs/design/` when the repo goes public).
+Mockups for Classic, Inbox, Sidebar, icon states, and the Radar, Groovebox, Departures and Flyer skins are in [`docs/design/mockups/`](design/mockups/README.md).
