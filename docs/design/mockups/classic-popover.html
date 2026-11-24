@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>cmux-radar menu bar popover</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:#ECECEF}
+a{color:#9CC2FF}a:hover{color:#C7DCFF}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+</style>
+</head>
+<body>
+<div style="width:460px;height:780px;box-sizing:border-box;background:#0E0F13;position:relative;overflow:hidden">
+  <div style="height:30px;display:flex;align-items:center;justify-content:flex-end;gap:16px;padding:0 14px;background:rgba(255,255,255,0.06);font-size:13px;color:#D8D8DC">
+    <div style="display:flex;align-items:center;gap:6px;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,0.14)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2F2F4" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4"></path></svg>
+      <span style="min-width:16px;height:16px;border-radius:8px;background:#F5A524;color:#1A1203;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">2</span>
+    </div>
+    <span>Thu 19 Nov 15:31</span>
+  </div>
+
+  <div style="position:absolute;top:38px;left:12px;right:12px;bottom:12px;border-radius:16px;background:rgba(28,29,35,0.94);border:1px solid rgba(255,255,255,0.09);box-shadow:0 24px 60px rgba(0,0,0,0.55);display:flex;flex-direction:column;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <span style="font-size:15px;font-weight:600;letter-spacing:-0.01em">Agents</span>
+        <span style="font-size:12px;color:#A3A3AD"><span style="color:#F5A524">2 need you</span> · 1 working · 3 idle</span>
+      </div>
+      <div style="display:flex;gap:4px">
+        <button aria-label="Search sessions" style="width:32px;height:32px;border:0;border-radius:8px;background:transparent;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B5B5BE" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg></button>
+        <button aria-label="Settings" style="width:32px;height:32px;border:0;border-radius:8px;background:transparent;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B5B5BE" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></button>
+      </div>
+    </div>
+
+    <div style="flex:1;display:flex;flex-direction:column;gap:8px;padding:0 10px 10px;overflow:hidden">
+
+      <div style="border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(245,165,36,0.35);padding:12px 12px 12px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:8px;height:8px;border-radius:4px;background:#F5A524;box-shadow:0 0 0 4px rgba(245,165,36,0.18)"></span>
+          <span style="font-size:13px;font-weight:600">GENERAL ADMIN</span>
+          <span style="font-size:11px;color:#9A9AA5;font-family:'JetBrains Mono',monospace">~/.claude</span>
+          <span style="margin-left:auto;font-size:11px;color:#9A9AA5">3m</span>
+        </div>
+        <p style="margin:0;font-size:12.5px;line-height:1.5;color:#C9C9D1">Researched menu-bar agent managers. Confirmed cmux can read and type into any tab, so inline replies are possible.</p>
+        <div style="border-radius:8px;background:rgba(0,0,0,0.25);padding:10px 12px;font-size:13px;line-height:1.45;color:#F2F2F4">How do you want to go: build it, try Muster, or fork Muster?</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button style="height:28px;padding:0 10px;border-radius:14px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:#ECECEF;font-size:12px"><span style="color:#9A9AA5">1</span> Build it</button>
+          <button style="height:28px;padding:0 10px;border-radius:14px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:#ECECEF;font-size:12px"><span style="color:#9A9AA5">2</span> Try Muster</button>
+          <button style="height:28px;padding:0 10px;border-radius:14px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:#ECECEF;font-size:12px"><span style="color:#9A9AA5">3</span> Fork Muster</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;height:38px;border-radius:10px;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.12);padding:0 6px 0 12px">
+          <label for="r1" class="sr">Reply to GENERAL ADMIN</label>
+          <input id="r1" placeholder="Reply to GENERAL ADMIN…" style="flex:1;min-width:0;background:transparent;border:0;outline:none;color:#F2F2F4;font-size:13px">
+          <span style="font-size:11px;color:#8C8C97">⌥⏎ jump</span>
+          <button aria-label="Send reply" style="width:28px;height:28px;border-radius:7px;border:0;background:#F5A524;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A1203" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
+        </div>
+      </div>
+
+      <div style="border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,122,89,0.35);padding:12px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:8px;height:8px;border-radius:4px;background:#FF7A59"></span>
+          <span style="font-size:13px;font-weight:600">DOCS SITE</span>
+          <span style="font-size:11px;color:#FF9A80;font-weight:500">Permission</span>
+          <span style="margin-left:auto;font-size:11px;color:#9A9AA5">1m</span>
+        </div>
+        <div style="border-radius:8px;background:rgba(0,0,0,0.3);padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#E6E6EA">$ bun scripts/fetch-docs.ts --days 7</div>
+        <div style="display:flex;gap:6px">
+          <button style="flex:1;height:32px;border-radius:8px;border:0;background:#ECECEF;color:#111114;font-size:12.5px;font-weight:600">Allow once</button>
+          <button style="flex:1;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,0.14);background:transparent;color:#ECECEF;font-size:12.5px">Always</button>
+          <button style="flex:1;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,0.14);background:transparent;color:#ECECEF;font-size:12.5px">Deny</button>
+        </div>
+      </div>
+
+      <div style="border-radius:12px;background:rgba(255,255,255,0.03);padding:11px 12px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:8px;height:8px;border-radius:4px;background:#5B9DFF;box-shadow:0 0 0 4px rgba(91,157,255,0.16)"></span>
+          <span style="font-size:13px;font-weight:600">POMOFITNESS</span>
+          <span style="margin-left:auto;font-size:11px;color:#9A9AA5;font-family:'JetBrains Mono',monospace">1:12</span>
+        </div>
+        <p style="margin:0;font-size:12.5px;color:#B9B9C2">Running vitest. 42 of 58 passing so far.</p>
+        <div style="height:3px;border-radius:2px;background:rgba(255,255,255,0.08)"><div style="width:72%;height:3px;border-radius:2px;background:#5B9DFF"></div></div>
+      </div>
+
+      <div style="border-radius:12px;padding:9px 12px;display:flex;align-items:center;gap:8px">
+        <span style="width:8px;height:8px;border-radius:4px;background:#6B6B76"></span>
+        <span style="font-size:13px;color:#C9C9D1">V view localhost</span>
+        <span style="font-size:12px;color:#8C8C97;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">Updated package.json scripts</span>
+        <span style="font-size:11px;color:#8C8C97">2h</span>
+      </div>
+      <div style="border-radius:12px;padding:9px 12px;display:flex;align-items:center;gap:8px">
+        <span style="width:8px;height:8px;border-radius:4px;background:#6B6B76"></span>
+        <span style="font-size:13px;color:#C9C9D1">FINANCE DASHBOARD</span>
+        <span style="font-size:12px;color:#8C8C97;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">Idle since Monday</span>
+        <span style="font-size:11px;color:#8C8C97">3d</span>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid rgba(255,255,255,0.07);font-size:12px;color:#9A9AA5">
+      <span><span style="font-family:'JetBrains Mono',monospace;color:#C9C9D1">⌘1–9</span> answer · <span style="font-family:'JetBrains Mono',monospace;color:#C9C9D1">⇥</span> next</span>
+      <a href="#">Open cmux</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

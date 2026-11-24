@@ -2,7 +2,7 @@
 
 The Classic skin, broken down into tokens and components. This is the contract the `RadarUI` PRs implement: every component, every state, and the stories that show them. Other skins (Radar, …) reuse the same component inventory and view models and swap the theme and layout.
 
-Source: the v1 design canvas (Classic popover, Inbox panel, cmux sidebar, menu bar icon states).
+Source: the v1 mockups in [`mockups/`](mockups/README.md) (Classic popover, Inbox panel, cmux sidebar, menu bar icon states).
 
 ## 1. Principles
 

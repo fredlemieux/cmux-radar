@@ -38,7 +38,7 @@ The presentation layer is swappable. All skins share the same data, keyboard sho
 | Departures | open for contribution | Split-flap board; questions arrive as boarding passes |
 | Flyer | open for contribution | Acid rave flyer; sessions as the lineup, answers as tear-off tabs |
 
-Design mockups for all of these exist and will be linked here once the repo is public.
+Mockups for every skin and surface: [docs/design/mockups](docs/design/mockups/README.md).
 
 ## Architecture
 
@@ -133,7 +133,7 @@ Stories live in `Sources/RadarStories`. Adding one gives you a catalog entry **a
 
 ### Costs
 
-No servers; the app is fully local. Ongoing costs are the Apple Developer Program ($99/year, for notarised releases) and CI minutes while the repo is private. Details and forecast: [architecture-and-costs](docs/architecture-and-costs.md).
+No servers; the app is fully local. The only ongoing cost is the Apple Developer Program ($99/year, for notarised releases); CI is free because the repo is public. Details and forecast: [architecture-and-costs](docs/architecture-and-costs.md).
 
 ## Docs
 
