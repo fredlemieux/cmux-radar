@@ -73,6 +73,12 @@ enum FrameDecoderTests {
             #expect(decodeFrame(eventFrame("agent.hook.PermissionRequest", payload: payload)) == .ignored)
         }
 
+        @Test func `completed on the Feed without a request id is ignored`() {
+            var payload = hookPayload("PermissionRequest", phase: "completed", tool: "Bash")
+            payload["_opencode_request_id"] = nil as String?
+            #expect(decodeFrame(eventFrame("feed.item.completed", payload: payload)) == .ignored)
+        }
+
         @Test func `completed on the Feed resolves the request`() {
             let payload = hookPayload("PermissionRequest", phase: "completed", tool: "Bash", requestID: permissionRequestID)
             let expected = CmuxSignal.event(.decisionResolved(requestID: permissionRequestID, stamp: fixtureStamp))
