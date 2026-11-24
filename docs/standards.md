@@ -30,9 +30,11 @@ This repo follows the software-factory engineering standards. The canonical stan
 | Every test asserts | `#expect` / `#require` in every test; reviewed in the Uncle Bob loop. |
 | No `.only` / `.skip` | `.disabled(` is a lint error (`no_disabled_tests`). |
 | Mutation testing is the arbiter | Muter (`make mutate`, `make mutate-changed`). Threshold 90 for core and snapshot logic. Rendering and file-system glue is excluded and covered by example tests (`RenderTests`, `AssertSnapshotTests`). |
+| Muter's operator set | Muter mutates comparisons, logical connectors, ternaries and removed calls, **not arithmetic**. Arithmetic (e.g. contrast maths) is pinned by exact-value example tests against published reference values plus property tests. |
 | Hybrid mutation gate | PR: changed files only. Nightly: full run. Both run on CI only while the repo is public (cost, see `architecture-and-costs.md`); while private, run `make mutate-changed` before pushing. |
 | Property-based tests | `PropertyBased` (`propertyCheck`). **Seeds are random per run; failures print the seed** (ADR 0003). |
-| Test-diary headers | First line of every test file: `// MUTATION-VERIFIED: killed X/Y mutants on <date>`. |
+| Test-diary headers | First line of every test file: `// MUTATION-VERIFIED: killed X/Y mutants on <date>`, or `// MUTATION-VERIFIED: n/a — <reason>` for suites whose subject is excluded from mutation (rendering glue, stories, token values). |
+| Snapshot sensitivity | Default precision 99.95% of pixels with a per-channel tolerance of 6: small components can't hide a changed shape under the threshold. |
 | Gate 0: look at it | Snapshot PNGs under `__Snapshots__/` are committed and reviewed in the PR diff. Every component also has catalog stories (`make catalog`), viewed before a UI PR is opened. |
 | E2E fails hard | No `continue-on-error` in CI. |
 

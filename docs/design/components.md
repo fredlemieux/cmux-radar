@@ -7,7 +7,7 @@ Source: the v1 design canvas (Classic popover, Inbox panel, cmux sidebar, menu b
 ## 1. Principles
 
 1. **One glance, one action.** A waiting session shows the question and the answer controls without a click.
-2. **Status by colour and shape.** Each status has a colour *and* a distinct dot treatment (ring, solid, pulse), so it reads without colour vision.
+2. **Status by colour, shape and place.** Each status has a colour *and* its own dot shape: waiting = halo, permission = ring, working = solid, idle = hollow (`DotTreatmentTests`). Permission's ring and idle's outline stand out without colour. Waiting and working differ only by a soft halo, so they are also separated by **position and grouping**: urgent sessions always sort first and render as cards with the question visible.
 3. **Native first.** System font (SF Pro / SF Mono), system materials where they help, standard keyboard behaviour. The mockups used Inter; the native build uses the system font.
 4. **Display-ready inputs.** Components never format dates or compute status; they get strings and enums.
 
@@ -32,11 +32,15 @@ Every value lives in `Theme`. Components read `Theme` from the environment; they
 | `status.waiting` | `#F5A524` | `#9A6200` | Needs your reply |
 | `status.permission` | `#FF7A59` | `#C8431F` | Needs permission |
 | `status.working` | `#5B9DFF` | `#2F6FE0` | Agent is running |
-| `status.idle` | `#6B6B76` | `#A0A0A8` | Nothing to do |
+| `status.idle` | `#74747F` | `#85858E` | Nothing to do |
 | `onStatus.waiting` | `#1A1203` | `#FFFFFF` | Text on a waiting-coloured fill |
+| `onStatus.permission` | `#1F0A04` | `#FFFFFF` | Text on a permission-coloured fill |
 | `action.primary` / `onAction.primary` | `#ECECEF` / `#111114` | `#111114` / `#FFFFFF` | Allow once |
 
-**Contrast rule (tested):** every text token on `surface.popover`, and every `onX` on its fill, meets WCAG AA 4.5:1. Hint text (`text.tertiary`) is ≥ 4.5:1 too, since it's small.
+**Contrast rules (tested):**
+- Text: every text token on `surface.popover`, every `onX` on its fill, and the highlighted chip's number on its tint meet WCAG AA 4.5:1. Hint text (`text.tertiary`) is ≥ 4.5:1 too, since it's small.
+- Graphics: every status colour is ≥ 3:1 on the popover and on a card (WCAG 1.4.11).
+- Count badges exist only in the two attention colours, the only fills with an on-colour.
 
 ### Type
 
@@ -50,6 +54,8 @@ Every value lives in `Theme`. Components read `Theme` from the environment; they
 | `chip` | SF Pro | 12 / medium |
 | `mono` | SF Mono | 12 / regular |
 | `sectionLabel` | SF Pro | 11 / semibold, tracking +0.06em, uppercase |
+| `badge` | SF Pro | 11 / bold, monospaced digits |
+| `button` / `buttonPrimary` | SF Pro | 12.5 / regular · semibold |
 
 ### Space, radius, size, motion
 
@@ -64,7 +70,8 @@ Every value lives in `Theme`. Components read `Theme` from the environment; they
 | `size.dot` | 8 |
 | `size.control` | 28 (chips, icon buttons, send) · 32 (permission buttons) · 38 (reply field) |
 | `popover.width` | 436 |
-| `motion.pulse` | waiting/permission dot ring: 1.2 s ease-in-out, repeats; off when Reduce Motion is on |
+| `motion.pulse` | waiting/permission dot ring: 1 → 1.25×, 1.2 s ease-in-out, repeats; starts and stops live with status and Reduce Motion |
+| `opacity` | halo 0.22 · tint 0.14 · disabled 0.45 · attention border 0.38 |
 
 ## 3. View models (RadarUI inputs)
 
@@ -100,10 +107,10 @@ Atoms → molecules → organisms → templates. **Story** = one catalog entry a
 
 | Component | Inputs | Stories |
 |---|---|---|
-| `StatusDot` | status, pulsing | waiting · waiting pulsing · permission · working · idle |
-| `CountBadge` | count, status | 1 · 2 · 12 · 99+ |
+| `StatusDot` | status, pulsing | waiting · waiting pulsing · waiting pulsing (reduced motion) · permission · working · idle |
+| `CountBadge` | count, attention (waiting / permission) | 1 · 2 · 12 · 99+ · permission |
 | `KeyHint` | keys (`"⌘1"`) | ⌘1 · ⌥⏎ · ⇥ |
-| `IconButton` | symbol, accessibility label | search · settings · send (filled) · send disabled |
+| `IconButton` | symbol, accessibility label | search · search disabled · settings · send (filled) · send disabled |
 | `ReplyChip` | index, label, highlighted | default · highlighted · long label (truncates) |
 | `ActionButton` | title, style (`primary`, `outline`) | primary · outline · disabled |
 | `CommandBlock` | text | short · long (wraps, max 3 lines) |

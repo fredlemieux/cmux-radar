@@ -12,3 +12,5 @@
 --stripunusedargs closure-only
 --header ignore
 --exclude .build
+# SwiftUI macros (@Entry, #Preview) need full Xcode; the build must work with the Command Line Tools.
+--disable environmentEntry

@@ -21,7 +21,7 @@ public func assertSnapshot(
     size: CGSize,
     named name: String,
     colorScheme: ColorScheme = .dark,
-    precision: Double = 0.995,
+    precision: Double = 0.9995,
     tolerance: UInt8 = 6,
     record: Bool = SnapshotEnvironment.recordAll,
     filePath: String = #filePath,

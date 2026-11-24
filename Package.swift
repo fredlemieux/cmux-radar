@@ -31,8 +31,11 @@ let package = Package(
         // Dumb SwiftUI components. Know only their inputs.
         .target(name: "RadarUI", swiftSettings: uiSettings),
 
+        // Every component state as data. Drives the catalog and the snapshot tests.
+        .target(name: "RadarStories", dependencies: ["RadarUI"], swiftSettings: uiSettings),
+
         // Component catalog app — the project's Storybook. `make catalog`.
-        .executableTarget(name: "RadarCatalog", dependencies: ["RadarUI"], swiftSettings: uiSettings),
+        .executableTarget(name: "RadarCatalog", dependencies: ["RadarUI", "RadarStories"], swiftSettings: uiSettings),
 
         // Snapshot testing without XCTest (see docs/adr/0002).
         .target(name: "RadarSnapshot", swiftSettings: strict),
@@ -43,6 +46,18 @@ let package = Package(
                 "RadarSnapshot",
                 .product(name: "PropertyBased", package: "swift-property-based"),
             ],
+            swiftSettings: strict,
+        ),
+
+        .testTarget(
+            name: "RadarUITests",
+            dependencies: [
+                "RadarUI",
+                "RadarStories",
+                "RadarSnapshot",
+                .product(name: "PropertyBased", package: "swift-property-based"),
+            ],
+            exclude: ["__Snapshots__"],
             swiftSettings: strict,
         ),
     ],
