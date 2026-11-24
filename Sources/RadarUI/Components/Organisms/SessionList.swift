@@ -66,19 +66,10 @@ public struct SessionList: View {
     }
 
     private func handle(_ press: KeyPress) -> KeyPress.Result {
-        let command = keyCommand(
-            characters: press.characters,
-            isReturn: press.key == .return,
-            command: press.modifiers.contains(.command),
-            option: press.modifiers.contains(.option),
-        )
-        guard let command, let routed = route(command, focused: focused, in: sessions) else {
+        guard let command = press.sessionCommand, let routed = route(command, focused: focused, in: sessions) else {
             return .ignored
         }
-        switch routed {
-        case let .pick(id, option): actions.pick(id, option)
-        case let .jump(id): actions.jump(id)
-        }
+        actions.perform(routed)
         return .handled
     }
 }

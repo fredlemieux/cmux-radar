@@ -7,10 +7,10 @@ nonisolated extension Stories {
     static let molecules: [Story] = sessionHeader + questionBlock + replyChips + replyField + permissionBar + idleRow
 
     /// docs/design/components.md §4, Organisms.
-    static let organisms: [Story] = sessionCard + popoverChrome + sessionList + menuBarIcon
+    static let organisms: [Story] = sessionCard + popoverChrome + sessionList + menuBarIcon + radarOrganisms
 
     /// docs/design/components.md §4, Templates.
-    static let templates: [Story] = classicPopover
+    static let templates: [Story] = classicPopover + radarTemplates
 
     private static let row = CGSize(width: 436, height: 64)
     private static let cardWidth: CGFloat = 436
