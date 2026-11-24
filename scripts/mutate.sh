@@ -16,7 +16,7 @@ if [[ "${1:-}" == "--changed" ]]; then
   base="${2:?usage: mutate.sh --changed <base-ref>}"
   while IFS= read -r file; do files+=("$file"); done < <(
     git diff --name-only --diff-filter=AM "$base"...HEAD -- \
-      'Sources/RadarCore/*.swift' 'Sources/RadarSnapshot/*.swift' 'Sources/RadarUI/*.swift' |
+      'Sources/RadarCore/*.swift' 'Sources/RadarCmux/*.swift' 'Sources/RadarSnapshot/*.swift' 'Sources/RadarUI/*.swift' |
       grep -vE 'Sources/RadarSnapshot/(Render|AssertSnapshot)\.swift|Sources/RadarUI/(Components/|Theme/Theme\.swift)' || true
   )
   if [[ ${#files[@]} -eq 0 ]]; then

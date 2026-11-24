@@ -82,6 +82,6 @@ custom_rules:
   no_print_in_sources:
     name: "No print in library code"
     regex: '^\s*print\('
-    included: 'Sources/Radar(Core|UI|Snapshot)/'
+    included: 'Sources/Radar(Core|Cmux|UI|Snapshot)/'
     message: "Libraries don't print. Return values or log via the app layer."
     severity: error

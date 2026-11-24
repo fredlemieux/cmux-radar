@@ -18,6 +18,7 @@ let package = Package(
     platforms: [.macOS(.v14)],
     products: [
         .library(name: "RadarCore", targets: ["RadarCore"]),
+        .library(name: "RadarCmux", targets: ["RadarCmux"]),
         .library(name: "RadarUI", targets: ["RadarUI"]),
         .executable(name: "RadarCatalog", targets: ["RadarCatalog"]),
     ],
@@ -27,6 +28,9 @@ let package = Package(
     targets: [
         // Pure domain logic. No UI, no I/O.
         .target(name: "RadarCore", swiftSettings: strict),
+
+        // Decodes cmux frames and Feed items into RadarCore events. Pure: no sockets, no files.
+        .target(name: "RadarCmux", dependencies: ["RadarCore"], swiftSettings: strict),
 
         // Dumb SwiftUI components. Know only their inputs.
         .target(name: "RadarUI", swiftSettings: uiSettings),
@@ -43,6 +47,16 @@ let package = Package(
         .testTarget(
             name: "RadarCoreTests",
             dependencies: [
+                "RadarCore",
+                .product(name: "PropertyBased", package: "swift-property-based"),
+            ],
+            swiftSettings: strict,
+        ),
+
+        .testTarget(
+            name: "RadarCmuxTests",
+            dependencies: [
+                "RadarCmux",
                 "RadarCore",
                 .product(name: "PropertyBased", package: "swift-property-based"),
             ],
