@@ -84,6 +84,30 @@ enum PendingDecision {
 
 `reduce(state, event) -> state` is a pure function. Everything else is side effects around it.
 
+In code (`Sources/RadarCore`): adapters decode cmux frames into `RadarEvent`s, and `reduce` applies them. Edge rules the table leaves open, because events can be late, replayed (bootstrap, resume gaps) or interleaved by parallel tools:
+
+- **Stale events.** Order comes from the stream's `seq`, never the clock. Hooks, Feed and notifications stamp their times at different moments, and one source's clock can be skewed. An event from earlier in the stream than the last one applied to a session never changes it. So a replayed "Waiting" notification or a late Stop can't flip a newer turn to `waiting`, which would let Radar type mid-turn. Bootstrap snapshots carry the stream position they were read at, and a snapshot only changes a session if it's strictly newer than the last live event at that position. So a re-read "Waiting" notification can never undo a turn that started at the same position.
+- **Context.** Later events fill in context the session lacked, such as a surface that was `null`. They never blank out known context, and never move a live session to a different surface or workspace: typing into the wrong tab is worse than not typing. A session resumed after it ended (a new prompt) takes the surface and workspace it resumed in.
+- **Decisions.**
+  - Resolution is keyed by `request_id` alone and closes only the decision holding that id.
+  - A bootstrap `feed.list` closes any open decision Feed no longer holds (it was resolved during a resume gap).
+  - A parallel tool call (`PreToolUse`, Feed `toolUse`) keeps an open decision open, because the agent is still blocked on it.
+  - A re-sent copy of the open decision keeps its arrival time, so the Feed timeout isn't restarted.
+  - `UserPromptSubmit`, `Stop` and `SessionEnd` drop any open decision, because its turn is over.
+- **Unseen and ended sessions.**
+  - A prompt, tool or decision event creates an unseen session.
+  - A Stop for an unseen session is ignored (bootstrap discovers existing ones), so a late Stop never makes a ghost card.
+  - Only a new prompt revives an ended session.
+- **Feed replies** name the `request_id` shown on the card and are refused unless that decision is still the open one. They stop `replyMargin` (5 s) before the 120 s timeout, so a reply in flight still lands.
+- `Session.pendingSince` records when the open decision arrived. Ageing (`.tick`) keeps `updatedAt`, because it is the last activity, not the last state change.
+
+Known v1 limits:
+
+- **One open decision per session.** If two subagents ask at once, the newer request replaces the older on the card, and the older can still be answered in the terminal via Jump.
+- **A `working` session never ages.** If both Stop and the Waiting notification are missed, it stays working until the next event.
+- **Event times are taken as stamped.** A source whose clock runs ahead delays idle, hide and the Feed expiry by the same amount. Ordering is unaffected because it uses `seq`. A fix is to stamp `pendingSince` with Radar's own receive time; this is tracked for the adapter PR.
+- **A decision Feed dropped during a resume gap goes back to `working`.** It should instead stay visible as "answer in terminal"; this is tracked for the adapter PR.
+
 ### Bootstrap and resume
 
 1. Read `claude-hook-sessions.json` → initial sessions (title, cwd, surface, last message).
@@ -188,7 +212,7 @@ Rules: skins receive view models and an `actions` handle only. They can't touch 
 
 Swift Testing, one behaviour per test, nested `@Suite`s per feature and scenario.
 
-- **Reducer:** a test per transition row in §3, driven by recorded and scrubbed event fixtures.
+- **Reducer:** a test per transition row and edge rule in §3, with property tests over every state. Recorded, scrubbed event fixtures arrive with the cmux adapters that decode them.
 - **Bootstrap:** gap handling, persisted `seq`, a missing `claude-hook-sessions.json`.
 - **Actions:** reply refused while `working`; reply refused with `surfaceID == nil`; expired pending → jump only.
 - **CmuxStateReader:** tail-reading from an offset; malformed lines skipped.
@@ -224,6 +248,7 @@ Swift Testing, one behaviour per test, nested `@Suite`s per feature and scenario
 2. Does `feed.list` return the item payload (question text, tool input) if asked, so we can skip reading `workstream.jsonl`?
 3. Can the menu bar app run unsandboxed (needed for the Unix socket and `~/.cmuxterm`)? Mac App Store distribution would then be out; Homebrew + notarised DMG only.
 4. Should Radar also offer itself as a cmux Dock control (`dock.json`) for users who don't want a menu bar icon?
+5. Are Feed `request_id`s unique across sessions? The reducer resolves by request id alone, which assumes they are. If they're per-session counters, resolution must also match the session.
 
 ## Design references
 

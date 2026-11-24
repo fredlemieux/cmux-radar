@@ -41,6 +41,15 @@ let package = Package(
         .target(name: "RadarSnapshot", swiftSettings: strict),
 
         .testTarget(
+            name: "RadarCoreTests",
+            dependencies: [
+                "RadarCore",
+                .product(name: "PropertyBased", package: "swift-property-based"),
+            ],
+            swiftSettings: strict,
+        ),
+
+        .testTarget(
             name: "RadarSnapshotTests",
             dependencies: [
                 "RadarSnapshot",
