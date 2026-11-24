@@ -39,8 +39,8 @@ snapshots-record: ## Re-record every snapshot reference image
 	@echo "Re-run 'make test' to verify the recorded images."
 
 .PHONY: catalog
-catalog: ## Launch the component catalog (Storybook equivalent)
-	swift run $(TEST_FLAGS) RadarCatalog
+catalog: ## Launch the component catalog (Storybook); COMPONENT=Name opens one directly
+	COMPONENT="$(COMPONENT)" swift run $(TEST_FLAGS) RadarCatalog
 
 .PHONY: check
 check: lint build test ## Everything CI runs. Run before every push.

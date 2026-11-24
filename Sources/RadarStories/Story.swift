@@ -22,14 +22,19 @@ public nonisolated struct Story: Identifiable, Sendable, CustomStringConvertible
     /// The whole canvas, including padding around the component.
     public let size: CGSize
     public let render: @MainActor @Sendable (StoryContext) -> AnyView
+    /// True when the story contains AppKit-backed controls (text fields), which only the hosted
+    /// snapshot renderer can draw.
+    public let usesAppKitControls: Bool
 
     public init(
         _ level: StoryLevel,
         _ component: String,
         _ name: String,
         size: CGSize,
+        usesAppKitControls: Bool = false,
         render: @escaping @MainActor @Sendable (StoryContext) -> some View,
     ) {
+        self.usesAppKitControls = usesAppKitControls
         self.level = level
         self.component = component
         self.name = name
@@ -54,7 +59,7 @@ public nonisolated struct Story: Identifiable, Sendable, CustomStringConvertible
 
 /// Every story in the design system, in catalog order.
 public nonisolated enum Stories {
-    public static let all: [Story] = atoms
+    public static let all: [Story] = atoms + molecules + organisms + templates
 
     /// Stories grouped by component, preserving order.
     public static func byComponent(_ stories: [Story] = all) -> [(component: String, stories: [Story])] {

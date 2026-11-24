@@ -69,3 +69,16 @@ struct StatusGraphicContrastTests {
         #expect(contrastRatio(palette.status(status).value(for: appearance), card) >= 3)
     }
 }
+
+/// The reply field's placeholder and hints sit on an inset, inside a card, on the popover.
+struct NestedSurfaceContrastTests {
+    @Test(arguments: Appearance.allCases)
+    func `hint text meets wcag aa on an inset inside a card`(appearance: Appearance) {
+        let palette = Palette.classic
+        let popover = palette.surfacePopover.value(for: appearance)
+        let card = palette.surfaceCard.value(for: appearance).over(popover)
+        let inset = palette.surfaceInset.value(for: appearance).over(card)
+        let hint = palette.textTertiary.value(for: appearance).over(inset)
+        #expect(contrastRatio(hint, inset) >= 4.5)
+    }
+}

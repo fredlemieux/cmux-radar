@@ -16,7 +16,7 @@ public nonisolated struct Playground: Sendable {
 }
 
 public nonisolated enum Playgrounds {
-    public static let all: [Playground] = atoms
+    public static let all: [Playground] = atoms + composites
 
     public static func named(_ component: String) -> Playground? {
         all.first { $0.component == component }

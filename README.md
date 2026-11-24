@@ -105,6 +105,8 @@ Works with full Xcode or just the Command Line Tools (`xcode-select --install`);
 | Stories | Every named state, rendered live and clickable; Dark / Light / Side by side; 1×–2× zoom |
 | Actions | Every tap or submit from any story, with the story it came from |
 
+`make catalog COMPONENT=ClassicPopover` opens straight onto a component. The ClassicPopover playground is live: answer a card and it moves on, as the real app will.
+
 Stories live in `Sources/RadarStories`. Adding one gives you a catalog entry **and** a snapshot test in both appearances: run `make test` once to record, review the PNG, run again.
 
 ### Quality gates

@@ -24,12 +24,21 @@ public func assertSnapshot(
     precision: Double = 0.9995,
     tolerance: UInt8 = 6,
     record: Bool = SnapshotEnvironment.recordAll,
+    renderer: SnapshotRenderer = .image,
     filePath: String = #filePath,
     sourceLocation: SourceLocation = #_sourceLocation,
 ) {
-    let fullName = "\(name).\(colorScheme == .dark ? "dark" : "light")"
+    let schemed = "\(name).\(colorScheme == .dark ? "dark" : "light")"
+    let fullName = switch renderer {
+    case .image: schemed
+    case .hosted: hostedSnapshotName(schemed, backingScale: hostedBackingScale())
+    }
     let paths = snapshotPaths(testFile: filePath, name: fullName)
-    guard let actual = renderBitmap(view, size: size, colorScheme: colorScheme) else {
+    let rendered = switch renderer {
+    case .image: renderBitmap(view, size: size, colorScheme: colorScheme)
+    case .hosted: renderHostedBitmap(view, size: size, colorScheme: colorScheme)
+    }
+    guard let actual = rendered else {
         Issue.record("Could not render \(fullName)", sourceLocation: sourceLocation)
         return
     }
