@@ -1,4 +1,4 @@
-// MUTATION-VERIFIED: pending
+// MUTATION-VERIFIED: n/a — FeedItems.swift has no operators Muter mutates (0 mutants on 2026-11-24)
 import Foundation
 @testable import RadarCmux
 import RadarCore

@@ -1,4 +1,4 @@
-// MUTATION-VERIFIED: pending
+// MUTATION-VERIFIED: killed 9/9 mutants on 2026-11-24 (FrameDecoder.swift)
 import Foundation
 @testable import RadarCmux
 import RadarCore
