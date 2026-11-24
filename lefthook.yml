@@ -1,0 +1,34 @@
+# Git hooks — installed by `make bootstrap`.
+# The repo sets a local core.hooksPath, so each hook first runs the user's global hook of the same
+# name (if any) via scripts/run-global-hook.sh, then ours.
+output:
+  - failure
+
+pre-commit:
+  piped: true
+  commands:
+    1_global-hook:
+      run: scripts/run-global-hook.sh pre-commit
+    2_format:
+      glob: "*.swift"
+      run: swiftformat --lint {staged_files}
+    3_lint:
+      glob: "*.swift"
+      run: scripts/swiftlint.sh lint --strict --quiet {staged_files}
+
+commit-msg:
+  piped: true
+  commands:
+    1_global-hook:
+      run: scripts/run-global-hook.sh commit-msg {1}
+    2_conventional:
+      run: scripts/check-commit-msg.sh {1}
+
+pre-push:
+  piped: true
+  commands:
+    1_global-hook:
+      run: scripts/run-global-hook.sh pre-push {0}
+      use_stdin: true # git passes the pushed refs on stdin
+    2_check:
+      run: make build test

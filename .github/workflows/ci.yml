@@ -1,0 +1,97 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main] # re-verify main after merges and stack collapses
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: lint · build · test
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: swift
+        name: Swift version (cache key)
+        run: echo "version=$(swift --version 2>&1 | sed -nE 's/.*Swift version ([0-9.]+).*/\1/p')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .build
+          key: spm-${{ runner.os }}-${{ steps.swift.outputs.version }}-${{ hashFiles('Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-${{ steps.swift.outputs.version }}-
+      - name: Install pinned tools
+        run: scripts/install-ci-tools.sh "$RUNNER_TEMP/tools"
+      - name: Lint
+        run: make lint
+      - name: Build
+        run: make build
+      - name: Test
+        run: make test
+      - name: Upload snapshot failures
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: snapshots
+          # Failures and any references recorded on this runner (download to commit them).
+          path: Tests/**/__Snapshots__/**/*.png
+          if-no-files-found: ignore
+
+  mutation:
+    name: mutation (changed files)
+    # macOS minutes are only free on public repos (docs/architecture-and-costs.md).
+    # While private, run `make mutate-changed` locally before pushing.
+    if: github.event_name == 'pull_request' && !github.event.repository.private
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Install Muter
+        run: brew install muter-mutation-testing/formulae/muter
+      - name: Mutate changed sources
+        run: scripts/mutate.sh --changed "origin/${{ github.base_ref }}"
+
+  secrets:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read # gitleaks lists the PR's commits
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  commits:
+    name: commit messages
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Check every commit in the PR
+        run: |
+          status=0
+          for sha in $(git rev-list "origin/${{ github.base_ref }}..${{ github.event.pull_request.head.sha }}"); do
+            git log -1 --format=%B "$sha" > "$RUNNER_TEMP/msg"
+            if head -n1 "$RUNNER_TEMP/msg" | grep -qE '^(fixup|squash)!'; then
+              echo "✗ Unsquashed $(head -n1 "$RUNNER_TEMP/msg") in $sha — run git rebase --autosquash"; status=1; continue
+            fi
+            scripts/check-commit-msg.sh "$RUNNER_TEMP/msg" || { echo "  in $sha"; status=1; }
+          done
+          exit "$status"

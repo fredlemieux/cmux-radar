@@ -2,7 +2,7 @@
 
 > See every AI coding agent running in [cmux](https://cmux.com) from your menu bar: which ones are working, which are waiting on you, and what they're asking. Answer without switching tabs.
 
-**Status:** pre-alpha. Design and architecture are settled; code is not written yet.
+**Status:** pre-alpha. Toolchain in place; components in progress.
 
 ---
 
@@ -70,6 +70,62 @@ Apps                 menu bar app (MenuBarExtra) · cmux sidebar extension
 
 - macOS 14+
 - cmux 0.64+ with agent hooks enabled (`cmux hooks setup`)
+
+## Development
+
+### Quick start
+
+```sh
+make bootstrap   # Homebrew tools (SwiftLint, SwiftFormat, lefthook) + git hooks
+make check       # lint + build + test: what CI runs; run before every push
+make catalog     # open the component catalog (the project's Storybook)
+make help        # every task
+```
+
+Works with full Xcode or just the Command Line Tools (`xcode-select --install`); see [ADR 0001](docs/adr/0001-swiftpm-without-xcode.md).
+
+### Layout
+
+| Path | What |
+|---|---|
+| `Sources/RadarCore` | Pure domain logic: session model, reducer, actions. No UI, no I/O. |
+| `Sources/RadarUI` | Presentational SwiftUI components. Display-ready inputs only. |
+| `Sources/RadarCatalog` | Component catalog app: every component, every state, live controls. |
+| `Sources/RadarSnapshot` | Snapshot testing without XCTest ([ADR 0002](docs/adr/0002-in-repo-snapshots-and-catalog.md)). |
+| `Tests/*` | Swift Testing suites; snapshot references in `__Snapshots__/`. |
+
+### Quality gates
+
+| Gate | How |
+|---|---|
+| Strict compiler | Swift 6 mode, warnings are errors, explicit imports |
+| Lint + format | SwiftLint `--strict`, SwiftFormat; no force unwraps/casts/tries, no suppressions |
+| Tests | Swift Testing, one behaviour per test, named as sentences |
+| Property tests | PropertyBased, random seeds, failures print a replayable seed ([ADR 0003](docs/adr/0003-random-property-seeds.md)) |
+| Mutation | Muter, ≥ 90% (`make mutate`, `make mutate-changed`) |
+| Visual | Snapshot PNGs committed and reviewed; catalog checked before UI PRs |
+| Commits | Conventional Commits via lefthook; stacked PRs |
+
+### Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `no such module 'Testing'` or `lib_TestingInterop.dylib` not loaded | Use `make test`, not bare `swift test`; it adds the Command Line Tools paths. |
+| SwiftLint: `Loading sourcekitdInProc.framework failed` | Use `make lint` (wraps SwiftLint with the CLT SourceKit path). |
+| A snapshot test fails with "Recorded snapshot" | Expected on first run of a new snapshot: review the PNG, re-run. |
+| A snapshot differs | Open `<name>.failure.png` next to the reference. If the change is intended: `make snapshots-record`. |
+| lefthook says `core.hooksPath is set globally` | `make bootstrap` sets a repo-local hooks path; each hook still runs your global hook of the same name first. |
+
+### Costs
+
+No servers; the app is fully local. Ongoing costs are the Apple Developer Program ($99/year, for notarised releases) and CI minutes while the repo is private. Details and forecast: [architecture-and-costs](docs/architecture-and-costs.md).
+
+## Docs
+
+- [Spec](docs/SPEC.md)
+- [Engineering standards](docs/standards.md)
+- [Architecture and costs](docs/architecture-and-costs.md)
+- [ADRs](docs/adr/)
 
 ## Roadmap
 

@@ -6,3 +6,7 @@ DerivedData/
 xcuserdata/
 *.xcodeproj/project.xcworkspace/xcuserdata/
 .env
+.build-mutate/
+muter_logs/
+*.failure.png
+muter.conf.yml
