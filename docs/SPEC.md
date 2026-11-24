@@ -29,12 +29,12 @@ Everything below was verified against **cmux 0.64.22** (`cmux capabilities`, `cm
 |---|---|---|
 | Live activity | `events.stream` / `cmux events --category agent --category feed --category notification` | NDJSON frames with `seq`, `name`, `workspace_id`, `surface_id`, `payload`. Resumable via `--after <seq>` / cursor file. Replay buffer 4,096 events; `ack.resume.gap` signals a gap. |
 | Agent lifecycle | `agent.hook.<HookEventName>` events | e.g. `agent.hook.Stop`, `agent.hook.UserPromptSubmit`, `agent.hook.SessionEnd`. Payload has `session_id` (`claude-<uuid>`), `cwd`, `surface_id` (sometimes `null`), `phase` (`received`/`completed`). **Text fields are redacted**; only lengths are included. |
-| Pending decisions | `feed.list`, `feed.item.received` / `feed.item.resolved` events | Item kinds seen: `permissionRequest`, `question`, `exitPlan`, `stop`, `userPrompt`, `toolUse`, `toolResult`, `sessionStart`, `sessionEnd`. |
-| Answering decisions | `feed.permission.reply`, `feed.question.reply`, `feed.exit_plan.reply` | All require `request_id`. Feed holds the agent's hook for up to **120 s**; after that the agent falls back to its own in-terminal prompt. |
+| Pending decisions | `feed.list { pending_only }`, `feed.item.received` / `feed.item.completed` events | Each item has `id`, `kind`, `status`, `workstream_id` (the session id), `cwd`, `created_at`, and, by kind, `request_id`, `tool_name`, `tool_input` (JSON string), `question_prompt`, `question_options` (`id`, `label`, `description`), `questions`, `text`. So the question and command text comes from `feed.list`, not from `workstream.jsonl`. `request_id` embeds the session id and a millisecond timestamp, so it is unique across sessions. Item kinds seen: `permissionRequest`, `question`, `exitPlan`, `stop`, `userPrompt`, `toolUse`, `toolResult`, `sessionStart`, `sessionEnd`. |
+| Answering decisions | `feed.permission.reply { request_id, mode }` with mode `once`/`always`/`all`/`bypass`/`deny` (no deny message); `feed.question.reply { request_id, selections: [String] }`; `feed.exit_plan.reply { request_id, mode, feedback? }` with mode `ultraplan`/`bypassPermissions`/`autoAccept`/`manual`/`deny` | Verified in cmux source. Feed holds the agent's hook for up to **120 s**; after that the agent falls back to its own in-terminal prompt. |
 | Notifications | `notification.list` | Gives title, subtitle, body, read state, workspace, surface and tab title (the tab title is what we display as the session name). |
 | Terminal I/O | `surface.read_text`, `surface.send_text`, `surface.send_key` | `send_text` pastes without submitting; follow with `send_key enter`. |
 | Jump | `feed.jump`, or focus via `focus-panel` / `open --surface` | |
-| Full text (question, last reply) | `~/.cmuxterm/workstream.jsonl` (Feed audit log), `~/.cmuxterm/claude-hook-sessions.json` | Contain `toolInputJSON`, question options, `assistantPreamble`, `lastUserMessage`, `lastBody`. **Undocumented internal files**; see Risks. |
+| Last reply text | `~/.cmuxterm/workstream.jsonl` (Feed audit log), `~/.cmuxterm/claude-hook-sessions.json` | Contain `toolInputJSON`, question options, `assistantPreamble`, `lastUserMessage`, `lastBody`. **Undocumented internal files**; see Risks. |
 
 ### Design consequence
 
@@ -122,12 +122,12 @@ Known v1 limits:
 | Action | Allowed when | Implementation |
 |---|---|---|
 | `reply(text)` | `waiting` or `idle`, and `surfaceID != nil` | Re-check state right before sending. `surface.send_text` then `surface.send_key enter`. Never sends while `working` (the text would land mid-turn). |
-| `allow(.once / .always)`, `deny(message?)` | `needsPermission`, pending not expired | `feed.permission.reply { request_id, … }` |
-| `answer(optionIDs)` | `needsAnswer` | `feed.question.reply { request_id, … }` |
-| `approvePlan(mode)` / `rejectPlan(feedback)` | `needsPlanApproval` | `feed.exit_plan.reply { request_id, … }` |
-| `jump()` | always | `feed.jump` if pending, else focus the surface |
+| `allow(.once / .always)`, `deny` | `needsPermission`, pending not expired | `feed.permission.reply { request_id, mode }`. cmux takes no deny message, so `RadarAction.deny`'s `message` is dropped until it does. |
+| `answer(optionIDs)` | `needsAnswer` | `feed.question.reply { request_id, selections }` |
+| `approvePlan(mode)` / `rejectPlan(feedback)` | `needsPlanApproval` | `feed.exit_plan.reply { request_id, mode, feedback? }`; reject is mode `deny` |
+| `jump()` | always | `feed.jump { workstream_id }` (the session id), else focus the surface |
 
-The parameter names after `request_id` still need confirming against cmux source (see Open questions).
+Parameters verified against cmux source (0.64.22).
 
 ### Suggested replies (v1, no LLM)
 
@@ -240,15 +240,17 @@ Swift Testing, one behaviour per test, nested `@Suite`s per feature and scenario
 | `surface_id` is sometimes `null` on hook events | Resolve it from `claude-hook-sessions.json` `activeSessionsBySurface`; otherwise jump only. |
 | Feed's 120 s timeout | Show a countdown on decision cards; after expiry, offer Jump. |
 | `claude` CLI flags change, or `claude` isn't on the app's `PATH` (GUI apps get a minimal `PATH`) | Resolve the binary via a login shell (`zsh -lc 'command -v claude'`) once and cache it; feature-detect flags with `claude --help`; fall back to heuristic summaries. |
+| Socket access. cmux's default `automation.socketControlMode` is `cmuxOnly`, which only accepts processes started inside a cmux terminal (an ancestry check), so a menu bar app is refused. | Onboarding asks the user to pick **Automation mode** (same-user local clients, no ancestry check) or **Password mode** in cmux settings; the app detects the refusal and shows that instruction. Never edit the user's cmux settings for them. |
 | Socket auth (`CMUX_SOCKET_PASSWORD`) | Read the same sources the cmux CLI does; show a clear settings error. |
 
 ## 10. Open questions
 
-1. Exact params for `feed.permission.reply` / `feed.question.reply` / `feed.exit_plan.reply` beyond `request_id`: confirm from cmux source before M2.
-2. Does `feed.list` return the item payload (question text, tool input) if asked, so we can skip reading `workstream.jsonl`?
+1. ~~Exact params for the feed replies.~~ Resolved: see §2.
+2. ~~Does `feed.list` return the item payload?~~ Resolved: yes, see §2. `workstream.jsonl` is only needed for the last reply text.
 3. Can the menu bar app run unsandboxed (needed for the Unix socket and `~/.cmuxterm`)? Mac App Store distribution would then be out; Homebrew + notarised DMG only.
 4. Should Radar also offer itself as a cmux Dock control (`dock.json`) for users who don't want a menu bar icon?
-5. Are Feed `request_id`s unique across sessions? The reducer resolves by request id alone, which assumes they are. If they're per-session counters, resolution must also match the session.
+5. ~~Are Feed `request_id`s unique across sessions?~~ Resolved: yes, they embed the session id and a timestamp.
+6. Which events mark a permission or question as decided or expired? Hook telemetry arrives as `feed.item.received` then `feed.item.completed`; the decision items still need a live capture before the adapter maps them.
 
 ## Design references
 
